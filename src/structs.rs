@@ -4,6 +4,11 @@ type Word = u16;
 static MAX_MEM: usize = 1024 * 64;
 
 
+pub fn error_loop() {
+    println!("Press CTRL + c to exit");
+    loop {}
+}
+
 
 pub struct Memory {
     pub data: [Word; MAX_MEM]
@@ -14,6 +19,21 @@ impl Memory {
         for i in 0..MAX_MEM {
             self.data[i] = 0;
         }
+    }
+
+    pub fn write_word(&mut self, value: Word, cycles: &mut u32, address: Byte) {
+        self.data[address as usize]     = value & 0xFF;
+        self.data[address as usize + 1] = value >> 8;
+        if *cycles == u32::MIN {
+            println!("No cycles left");
+            error_loop();
+        }
+        *cycles -= 1;
+        if *cycles == u32::MIN {
+            println!("No cycles left");
+            error_loop();
+        }
+        *cycles -= 1;
     }
 }
 
@@ -39,7 +59,8 @@ pub struct CPU {
 }
 
 impl CPU {
-    pub fn reset(&mut self, memory: &Memory) {
+
+    pub fn reset(&mut self) {
         // Set addresses
         self.program_counter = 0xFFFC;
         self.stack_pointer = 0x010;
@@ -60,45 +81,120 @@ impl CPU {
     }
 
 
-    pub fn LDASetStatus(&mut self) {
+    pub fn lda_set_status(&mut self) {
         self.zero_flag = self.accumulator == 0;
         self.negative_flag = (self.accumulator & 0b10000000) > 0;
+    }
+
+    // Fetches a word from the PC address and returns it
+    pub fn fetch_word(&mut self, cycles: &mut u32, memory: &Memory) -> Word {
+        // First Byte
+        let mut data = memory.data[self.program_counter as usize];
+        if self.program_counter == u16::MAX {
+            println!("Program counter would be out of bounds, aborting");
+        }
+        self.program_counter += 1;
+
+        // Second Byte
+        data |= memory.data[(self.program_counter << 8) as usize];
+        if self.program_counter == u16::MAX {
+            println!("Program counter would be out of bounds, aborting");
+        }
+        self.program_counter += 1;
+        if *cycles == u32::MIN {
+            println!("No cycles left");
+            error_loop();
+        }
+        *cycles -= 2;
+        println!("Cycles left: {}", &cycles);
+        return data
     }
 
     // Fetches a byte from the PC address and returns it
     pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Byte {
         let data = memory.data[self.program_counter as usize];
+        if self.program_counter == u16::MAX {
+            println!("Program counter would be out of bounds, aborting");
+        }
         self.program_counter += 1;
+        if *cycles == u32::MIN {
+            println!("No cycles left");
+            error_loop();
+        }
         *cycles -= 1;
+        println!("Cycles left: {}", &cycles);
         return data.try_into().unwrap()
     }
 
     // Reads a byte from the PC address and returns it without increasing the PC
     pub fn read_byte(&mut self, cycles: &mut u32, address: u8, memory: &Memory) -> Byte  {
         let data = memory.data[address as usize];
+
+        if *cycles == u32::MIN {
+            println!("No cycles left");
+            error_loop();
+        }
+
         *cycles -= 1;
+        println!("Cycles left: {}", &cycles);
         return data.try_into().unwrap()
     }
 
     // Executes an instruction
-    pub fn execute(&mut self, mut cycles: u32, memory: &Memory) {
+    pub fn execute(&mut self, mut cycles: u32, mut memory: &mut Memory) {
         while cycles > 0 {
             println!("Cycles left: {}", &cycles);
+            println!("Current address: {:#06X}", self.program_counter);
+            println!("Value at current address: {} | {:#06X}",
+                memory.data[self.program_counter as usize],
+                memory.data[self.program_counter as usize],
+            );
+
+
             let data = self.fetch_byte(&mut cycles, &memory);
             match data {
                 INS_LOADACCUMULATOR_IMMEDIATE => {
-                    println!("Instruction: {:#06x}", &data);
+                    println!("Instruction: {:#06X}", &data);
                     let value: Byte = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
-                    self.LDASetStatus();
+                    self.lda_set_status();
                 },
+
                 INS_LOADACCUMULATOR_ZERO_PAGE => {
-                    println!("Instruction: {:#06x}", &data);
+                    println!("Instruction: {:#06X}", &data);
                     let zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = self.read_byte(&mut cycles, zero_page_address, memory);
-                    self.LDASetStatus();
+                    self.lda_set_status();
                 },
-                _ => println!("Invalid opcode: {:#06x}", &data)
+
+                INS_LOADACCUMULATOR_ZERO_PAGE_X => {
+                    println!("Instruction: {:#06X}", &data);
+                    let mut zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
+                    zero_page_address += self.idx_reg_x;
+                    if cycles == u32::MIN {
+                        println!("No cycles left");
+                        error_loop();
+                    }
+                    cycles -= 1;
+                    self.accumulator = self.read_byte(&mut cycles, zero_page_address, memory);
+                    self.lda_set_status();
+                },
+
+                INS_JUMP_TO_SUBROUTINE => {
+                    let sub_address: Word = self.fetch_word(&mut cycles, &mut memory);
+                    println!("fetched address: {:#06X}", &sub_address);
+                    memory.write_word(self.program_counter-1, &mut cycles, self.stack_pointer);
+                    self.program_counter = sub_address;
+                    self.stack_pointer += 1;
+                    if cycles == u32::MIN {
+                        println!("No cycles left");
+                        error_loop();
+                    }
+                    cycles -= 1;
+
+                },
+
+                _ => println!("Invalid opcode: {:#06X}", &data)
             };
         }
         println!("Finished executing all instructions");

@@ -34,11 +34,11 @@ fn main() {
         data: [0;MAX_MEM]
     };
 
-    cpu.reset(&memory);
-    memory.data[0xFFFC] = INS_LOADACCUMULATOR_ZERO_PAGE as u16;
-    memory.data[0xFFFD] = 0x42;
-    memory.data[0x0042] = 0x84;
-    println!("{} | {}", &cpu.program_counter, & memory.data[0]);
-    println!("{} | {}", &cpu.program_counter, & memory.data[1]);
-    cpu.execute(3, &memory);
+    cpu.reset();
+    memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE as u16;
+    memory.data[0xFFFD] = INS_LOADACCUMULATOR_IMMEDIATE as u16;
+    memory.data[0xFFFE] = INS_JUMP_TO_SUBROUTINE as u16;
+    memory.data[0xFFFF] = 0xFFFC;
+
+    cpu.execute(0xFFFFFF, &mut memory);
 }
