@@ -1,11 +1,13 @@
 use crate::opcodes::*;
+use colored::Colorize;
 type Byte = u8;
 type Word = u16;
 static MAX_MEM: usize = 1024 * 64;
 
+const CYCLES_WARNING: &str = "No cycles left, aborting execution...";
 
 pub fn error_loop() {
-    println!("Press CTRL + c to exit");
+    println!("Press CTRL + C to exit");
     loop {}
 }
 
@@ -25,12 +27,12 @@ impl Memory {
         self.data[address as usize]     = value & 0xFF;
         self.data[address as usize + 1] = value >> 8;
         if *cycles == u32::MIN {
-            println!("No cycles left");
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
             error_loop();
         }
         *cycles -= 1;
         if *cycles == u32::MIN {
-            println!("No cycles left");
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
             error_loop();
         }
         *cycles -= 1;
@@ -91,7 +93,7 @@ impl CPU {
         // First Byte
         let mut data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
-            println!("Program counter would be out of bounds, aborting");
+            println!("Program counter would be out of bounds, stopping execution...");
         }
         self.program_counter += 1;
 
@@ -102,7 +104,7 @@ impl CPU {
         }
         self.program_counter += 1;
         if *cycles == u32::MIN {
-            println!("No cycles left");
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
             error_loop();
         }
         *cycles -= 2;
@@ -118,7 +120,7 @@ impl CPU {
         }
         self.program_counter += 1;
         if *cycles == u32::MIN {
-            println!("No cycles left");
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
             error_loop();
         }
         *cycles -= 1;
@@ -131,7 +133,7 @@ impl CPU {
         let data = memory.data[address as usize];
 
         if *cycles == u32::MIN {
-            println!("No cycles left");
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
             error_loop();
         }
 
@@ -152,27 +154,25 @@ impl CPU {
 
 
             let data = self.fetch_byte(&mut cycles, &memory);
+            println!("Fetched instruction: {:#06X}", &data);
             match data {
                 INS_LOADACCUMULATOR_IMMEDIATE => {
-                    println!("Instruction: {:#06X}", &data);
                     let value: Byte = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
                     self.lda_set_status();
                 },
 
                 INS_LOADACCUMULATOR_ZERO_PAGE => {
-                    println!("Instruction: {:#06X}", &data);
                     let zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = self.read_byte(&mut cycles, zero_page_address, memory);
                     self.lda_set_status();
                 },
 
                 INS_LOADACCUMULATOR_ZERO_PAGE_X => {
-                    println!("Instruction: {:#06X}", &data);
                     let mut zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
                     zero_page_address += self.idx_reg_x;
                     if cycles == u32::MIN {
-                        println!("No cycles left");
+                        println!("{}", CYCLES_WARNING.truecolor(200,100,0));
                         error_loop();
                     }
                     cycles -= 1;
@@ -182,12 +182,11 @@ impl CPU {
 
                 INS_JUMP_TO_SUBROUTINE => {
                     let sub_address: Word = self.fetch_word(&mut cycles, &mut memory);
-                    println!("fetched address: {:#06X}", &sub_address);
                     memory.write_word(self.program_counter-1, &mut cycles, self.stack_pointer);
                     self.program_counter = sub_address;
                     self.stack_pointer += 1;
                     if cycles == u32::MIN {
-                        println!("No cycles left");
+                        println!("{}", CYCLES_WARNING.truecolor(200,100,0));
                         error_loop();
                     }
                     cycles -= 1;

@@ -35,10 +35,5 @@ fn main() {
     };
 
     cpu.reset();
-    memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE as u16;
-    memory.data[0xFFFD] = INS_LOADACCUMULATOR_IMMEDIATE as u16;
-    memory.data[0xFFFE] = INS_JUMP_TO_SUBROUTINE as u16;
-    memory.data[0xFFFF] = 0xFFFC;
-
-    cpu.execute(0xFFFFFF, &mut memory);
+    cpu.execute(2, &mut memory);
 }
