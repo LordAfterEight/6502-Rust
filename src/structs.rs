@@ -144,8 +144,8 @@ impl CPU {
 
     // Executes an instruction
     pub fn execute(&mut self, mut cycles: u32, mut memory: &mut Memory) {
+        println!("Cycles left: {}", &cycles);
         while cycles > 0 {
-            println!("Cycles left: {}", &cycles);
             println!("Current address: {:#06X}", self.program_counter);
             println!("Value at current address: {} | {:#06X}",
                 memory.data[self.program_counter as usize],

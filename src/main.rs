@@ -3,12 +3,17 @@ mod opcodes;
 use structs::*;
 use opcodes::*;
 
+use clearscreen;
+
+
 type Byte = u8;
 type Word = u16;
 static MAX_MEM: usize = 1024 * 64;
 
 
 fn main() {
+    clearscreen::clear();
+
     let mut cpu = CPU {
         program_counter: 0,
         stack_pointer: 0,
@@ -35,5 +40,5 @@ fn main() {
     };
 
     cpu.reset();
-    cpu.execute(2, &mut memory);
+    cpu.execute(0, &mut memory);
 }
