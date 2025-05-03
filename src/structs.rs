@@ -59,29 +59,48 @@ impl CPU {
         self.negative_flag = false;
     }
 
+
+    pub fn LDASetStatus(&mut self) {
+        self.zero_flag = self.accumulator == 0;
+        self.negative_flag = (self.accumulator & 0b10000000) > 0;
+    }
+
     // Fetches a byte from the PC address and returns it
-    pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Byte{
-        let address = self.program_counter;
-        let data = memory.data[address as usize];
+    pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Byte {
+        let data = memory.data[self.program_counter as usize];
         self.program_counter += 1;
         *cycles -= 1;
         return data.try_into().unwrap()
     }
 
+    // Reads a byte from the PC address and returns it without increasing the PC
+    pub fn read_byte(&mut self, cycles: &mut u32, address: u8, memory: &Memory) -> Byte  {
+        let data = memory.data[address as usize];
+        *cycles -= 1;
+        return data.try_into().unwrap()
+    }
 
     // Executes an instruction
     pub fn execute(&mut self, mut cycles: u32, memory: &Memory) {
         while cycles > 0 {
+            println!("Cycles left: {}", &cycles);
             let data = self.fetch_byte(&mut cycles, &memory);
             match data {
                 INS_LOADACCUMULATOR_IMMEDIATE => {
+                    println!("Instruction: {:#06x}", &data);
                     let value: Byte = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
-                    self.zero_flag = self.accumulator == 0;
-                    self.negative_flag = (self.accumulator & 0b10000000) > 0;
+                    self.LDASetStatus();
                 },
-                _ => println!("Invalid opcode: {}", &data)
+                INS_LOADACCUMULATOR_ZERO_PAGE => {
+                    println!("Instruction: {:#06x}", &data);
+                    let zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
+                    self.accumulator = self.read_byte(&mut cycles, zero_page_address, memory);
+                    self.LDASetStatus();
+                },
+                _ => println!("Invalid opcode: {:#06x}", &data)
             };
         }
+        println!("Finished executing all instructions");
     }
 }

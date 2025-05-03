@@ -35,12 +35,10 @@ fn main() {
     };
 
     cpu.reset(&memory);
-    memory.data[0xFFFC] = INS_LOADACCUMULATOR_IMMEDIATE as u16;
+    memory.data[0xFFFC] = INS_LOADACCUMULATOR_ZERO_PAGE as u16;
     memory.data[0xFFFD] = 0x42;
+    memory.data[0x0042] = 0x84;
     println!("{} | {}", &cpu.program_counter, & memory.data[0]);
     println!("{} | {}", &cpu.program_counter, & memory.data[1]);
-    cpu.execute(2, &memory);
-    for instruction in memory.data {
-        println!("{}", instruction);
-    }
+    cpu.execute(3, &memory);
 }
