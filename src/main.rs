@@ -1,5 +1,7 @@
 mod structs;
+mod opcodes;
 use structs::*;
+use opcodes::*;
 
 type Byte = u8;
 type Word = u16;
@@ -7,7 +9,7 @@ static MAX_MEM: usize = 1024 * 64;
 
 
 fn main() {
-    let mut cpu = CPU{
+    let mut cpu = CPU {
         program_counter: 0,
         stack_pointer: 0,
 
@@ -28,10 +30,17 @@ fn main() {
         negative_flag: false
     };
 
-    let memory = Memory {
+    let mut memory = Memory {
         data: [0;MAX_MEM]
     };
 
     cpu.reset(&memory);
-    cpu.execute(2, &memory)
+    memory.data[0xFFFC] = INS_LOADACCUMULATOR_IMMEDIATE as u16;
+    memory.data[0xFFFD] = 0x42;
+    println!("{} | {}", &cpu.program_counter, & memory.data[0]);
+    println!("{} | {}", &cpu.program_counter, & memory.data[1]);
+    cpu.execute(2, &memory);
+    for instruction in memory.data {
+        println!("{}", instruction);
+    }
 }

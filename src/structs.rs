@@ -1,13 +1,16 @@
+use crate::opcodes::*;
 type Byte = u8;
 type Word = u16;
 static MAX_MEM: usize = 1024 * 64;
 
+
+
 pub struct Memory {
-    data: [Byte; MAX_MEM]
+    pub data: [Word; MAX_MEM]
 }
 
 impl Memory {
-    fn initialise(&mut self) {
+    pub fn initialise(&mut self) {
         for i in 0..MAX_MEM {
             self.data[i] = 0;
         }
@@ -15,29 +18,29 @@ impl Memory {
 }
 
 pub struct CPU {
-    program_counter: Word,
-    stack_pointer: Byte,
+    pub program_counter: Word,
+    pub stack_pointer: Byte,
 
     // Registers
-    accumulator: Byte,
-    idx_reg_x: Byte,
-    idx_reg_y: Byte,
+    pub accumulator: Byte,
+    pub idx_reg_x: Byte,
+    pub idx_reg_y: Byte,
 
-    processor_status: Byte,
+    pub processor_status: Byte,
 
     // Flags
-    carry_flag: bool,
-    zero_flag:  bool,
-    interrupt_disable: bool,
-    decimal_mode: bool,
-    break_command: bool,
-    overflow_flag: bool,
-    negative_flag: bool
+    pub carry_flag: bool,
+    pub zero_flag:  bool,
+    pub interrupt_disable: bool,
+    pub decimal_mode: bool,
+    pub break_command: bool,
+    pub overflow_flag: bool,
+    pub negative_flag: bool
 }
 
 impl CPU {
-    fn reset(&mut self, memory: &Memory) {
-        // Set adresses
+    pub fn reset(&mut self, memory: &Memory) {
+        // Set addresses
         self.program_counter = 0xFFFC;
         self.stack_pointer = 0x010;
 
@@ -56,6 +59,29 @@ impl CPU {
         self.negative_flag = false;
     }
 
-    fn execute(&mut self, ticks: u32, memory: &Memory) {
+    // Fetches a byte from the PC address and returns it
+    pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Byte{
+        let address = self.program_counter;
+        let data = memory.data[address as usize];
+        self.program_counter += 1;
+        *cycles -= 1;
+        return data.try_into().unwrap()
     }
 
+
+    // Executes an instruction
+    pub fn execute(&mut self, mut cycles: u32, memory: &Memory) {
+        while cycles > 0 {
+            let data = self.fetch_byte(&mut cycles, &memory);
+            match data {
+                INS_LOADACCUMULATOR_IMMEDIATE => {
+                    let value: Byte = self.fetch_byte(&mut cycles, memory);
+                    self.accumulator = value;
+                    self.zero_flag = self.accumulator == 0;
+                    self.negative_flag = (self.accumulator & 0b10000000) > 0;
+                },
+                _ => println!("Invalid opcode: {}", &data)
+            };
+        }
+    }
+}
