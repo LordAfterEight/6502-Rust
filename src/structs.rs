@@ -94,6 +94,7 @@ impl CPU {
         let mut data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
             println!("Program counter would be out of bounds, stopping execution...");
+            error_loop();
         }
         self.program_counter += 1;
 
@@ -101,14 +102,19 @@ impl CPU {
         data |= memory.data[(self.program_counter << 8) as usize];
         if self.program_counter == u16::MAX {
             println!("Program counter would be out of bounds, aborting");
+            error_loop();
         }
         self.program_counter += 1;
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
             error_loop();
         }
-        *cycles -= 2;
-        println!("Cycles left: {}", &cycles);
+        *cycles -= 1;
+        if *cycles == u32::MIN {
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+            error_loop();
+        }
+        *cycles -= 1;
         return data
     }
 
@@ -117,6 +123,7 @@ impl CPU {
         let data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
             println!("Program counter would be out of bounds, aborting");
+            error_loop();
         }
         self.program_counter += 1;
         if *cycles == u32::MIN {
@@ -124,7 +131,6 @@ impl CPU {
             error_loop();
         }
         *cycles -= 1;
-        println!("Cycles left: {}", &cycles);
         return data.try_into().unwrap()
     }
 
@@ -138,13 +144,11 @@ impl CPU {
         }
 
         *cycles -= 1;
-        println!("Cycles left: {}", &cycles);
         return data.try_into().unwrap()
     }
 
     // Executes an instruction
     pub fn execute(&mut self, mut cycles: u32, mut memory: &mut Memory) {
-        println!("Cycles left: {}", &cycles);
         while cycles > 0 {
             println!("Current address: {:#06X}", self.program_counter);
             println!("Value at current address: {} | {:#06X}",

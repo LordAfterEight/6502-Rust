@@ -40,5 +40,9 @@ fn main() {
     };
 
     cpu.reset();
-    cpu.execute(0, &mut memory);
+    memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE as u16;
+    memory.data[0xFFFD] = 0x000A;
+    memory.data[0x000A] = INS_JUMP_TO_SUBROUTINE as u16;
+    memory.data[0x000B] = 0xFFFC;
+    cpu.execute(18, &mut memory);
 }
