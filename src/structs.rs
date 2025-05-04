@@ -6,9 +6,16 @@ static MAX_MEM: usize = 1024 * 64;
 
 const CYCLES_WARNING: &str = "No cycles left, stopping...";
 
-pub fn error_loop() {
-    println!("Press CTRL + C to exit");
-    loop {}
+pub fn error_loop(error: &str) {
+    println!("{}", "\nFalling back to safe loop...\n\n".truecolor(200,100,0));
+    println!("{}\n{} {}\n\n{}",
+        "[!] Entered safe loop".truecolor(200,100,0),
+        "[i] Reason:".yellow(),
+        error,
+        "Press CRL + C to exit".cyan()
+    );
+    loop {
+    }
 }
 
 
@@ -22,12 +29,12 @@ impl Memory {
             self.data[i] = 0;
         }
     }
-    
+
     pub fn write_byte(&mut self, value: Word, cycles: &mut u32, address: Byte) {
-        self.data[address as usize] = value;
+        self.data[address as usize] = value & 0xFF;
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop();
+            error_loop("No cycles left");
         }
         *cycles -= 1;
     }
@@ -37,12 +44,12 @@ impl Memory {
         self.data[address as usize + 1] = value >> 8;
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop();
+            error_loop("No cycles left");
         }
         *cycles -= 1;
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop();
+            error_loop("No cycles left");
         }
         *cycles -= 1;
     }
@@ -91,10 +98,34 @@ impl CPU {
         self.negative_flag = false;
     }
 
+    pub fn write_byte(&mut self, value: Word, cycles: &mut u32, address: Word, memory: &mut Memory) {
+        memory.data[address as usize] = value;
+        if *cycles == u32::MIN {
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+            error_loop("No cycles left");
+        }
+        *cycles -= 1;
+    }
 
-    pub fn lda_set_status(&mut self) {
-        self.zero_flag = self.accumulator == 0;
-        self.negative_flag = (self.accumulator & 0b10000000) > 0;
+    pub fn write_word(&mut self, value: Word, cycles: &mut u32, address: Byte, memory: &mut Memory) {
+        memory.data[address as usize]     = value & 0xFF;
+        memory.data[address as usize + 1] = value >> 8;
+        if *cycles == u32::MIN {
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+            error_loop("No cycles left");
+        }
+        *cycles -= 1;
+        if *cycles == u32::MIN {
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+            error_loop("No cycles left");
+        }
+        *cycles -= 1;
+    }
+
+
+    pub fn set_zero_and_negative_flags(&mut self, register: Byte) {
+        self.zero_flag = register == 0;
+        self.negative_flag = (register & 0b10000000) > 0;
     }
 
     // Fetches a word from the PC address and returns it
@@ -103,7 +134,7 @@ impl CPU {
         let mut data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
             println!("Program counter would be out of bounds, stopping execution...");
-            error_loop();
+            error_loop("Program counter out of bounds");
         }
         self.program_counter += 1;
 
@@ -111,17 +142,17 @@ impl CPU {
         data |= memory.data[(self.program_counter << 8) as usize];
         if self.program_counter == u16::MAX {
             println!("Program counter would be out of bounds, aborting");
-            error_loop();
+            error_loop("Program counter out of bounds");
         }
         self.program_counter += 1;
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop();
+            error_loop("No cycles left");
         }
         *cycles -= 1;
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop();
+            error_loop("No cycles left");
         }
         *cycles -= 1;
         return data
@@ -132,28 +163,49 @@ impl CPU {
         let data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
             println!("Program counter would be out of bounds, aborting");
-            error_loop();
+            error_loop("Program counter out of bounds");
         }
         self.program_counter += 1;
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop();
+            error_loop("Program counter out of bounds");
         }
         *cycles -= 1;
         return data.try_into().unwrap()
     }
 
     // Reads a byte from the PC address and returns it without increasing the PC
-    pub fn read_byte(&mut self, cycles: &mut u32, address: u8, memory: &Memory) -> Byte  {
+    pub fn read_byte(&mut self, cycles: &mut u32, address: Word, memory: &Memory) -> Byte  {
         let data = memory.data[address as usize];
-
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop();
+            error_loop("No cycles left");
         }
-
         *cycles -= 1;
         return data.try_into().unwrap()
+    }
+
+    pub fn read_word(&mut self, cycles: &mut u32, address: Word, memory: &Memory) -> Word  {
+        let lo_byte: Word = self.read_byte(cycles, address, memory) as u16;
+        let hi_byte: Word = self.read_byte(cycles, address+1, memory) as u16;
+        if *cycles == u32::MIN {
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+            error_loop("No cycles left");
+        }
+        *cycles -= 1;
+        let return_value: Word = lo_byte | (hi_byte << 8);
+        return return_value
+    }
+
+    pub fn stack_pointer_as_address(&mut self) -> Word {
+        let return_value: Word = 0x100 | self.stack_pointer as u16;
+        return return_value
+    }
+
+    pub fn push_word_to_stack(&mut self, cycles: &mut u32, memory: &mut Memory, value: Word) {
+        let sp_as_addr: Word = self.stack_pointer_as_address();
+        self.write_byte(value >> 8, cycles, sp_as_addr, memory);
+        self.write_byte(value & 0xFF, cycles, sp_as_addr, memory);
     }
 
     // Executes an instruction
@@ -170,36 +222,46 @@ impl CPU {
             println!("Fetched instruction: {:#06X}", &data);
             match data {
                 INS_FORCE_INTERRUPT => {
-                    memory.write_byte(self.program_counter.into(), &mut cycles, self.stack_pointer);
-                    memory.write_byte(self.processor_status.into(), &mut cycles, self.stack_pointer);
+                    self.push_word_to_stack(
+                        &mut cycles,
+                        memory,
+                        self.processor_status.try_into().unwrap()
+                    );
+                    self.program_counter = self.read_word(&mut cycles, 0xFFFE, &memory);
+                    self.interrupt_disable = true;
                     self.break_command = true;
-                    self.accumulator = memory.data[0xFFFF].try_into().unwrap();
                     println!("Forced interrupt");
-                    error_loop();
+                    error_loop("Forced interrupt");
                 },
 
-                INS_LOADACCUMULATOR_IMMEDIATE => {
+                INS_LOAD_ACCUMULATOR_IMMEDIATE => {
                     let value: Byte = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
-                    self.lda_set_status();
+                    self.set_zero_and_negative_flags(self.accumulator);
                 },
 
-                INS_LOADACCUMULATOR_ZERO_PAGE => {
+                INS_LOAD_ACCUMULATOR_ZERO_PAGE => {
                     let zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
-                    self.accumulator = self.read_byte(&mut cycles, zero_page_address, memory);
-                    self.lda_set_status();
+                    self.accumulator = self.read_byte(&mut cycles, zero_page_address.into(), memory);
+                    self.set_zero_and_negative_flags(self.accumulator);
                 },
 
-                INS_LOADACCUMULATOR_ZERO_PAGE_X => {
+                INS_LOAD_ACCUMULATOR_ZERO_PAGE_X => {
                     let mut zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
                     zero_page_address += self.idx_reg_x;
                     if cycles == u32::MIN {
                         println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-                        error_loop();
+                        error_loop("No cycles left");
                     }
                     cycles -= 1;
-                    self.accumulator = self.read_byte(&mut cycles, zero_page_address, memory);
-                    self.lda_set_status();
+                    self.accumulator = self.read_byte(&mut cycles, zero_page_address.into(), memory);
+                    self.set_zero_and_negative_flags(self.accumulator);
+                },
+
+                INS_LOAD_X_REGISTER_IMMEDIATE => {
+                    let value: Byte = self.fetch_byte(&mut cycles, memory);
+                    self.idx_reg_x = value;
+                    self.set_zero_and_negative_flags(self.accumulator);
                 },
 
                 INS_JUMP_TO_SUBROUTINE => {
@@ -208,12 +270,12 @@ impl CPU {
                     self.program_counter = sub_address;
                     if self.stack_pointer == u8::MAX {
                         println!("Stack pointer would be out of bounds, stopping...");
-                        error_loop();
+                        error_loop("Stack pointer out of bounds");
                     }
                     self.stack_pointer += 1;
                     if cycles == u32::MIN {
                         println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-                        error_loop();
+                        error_loop("No cycles left");
                     }
                     cycles -= 1;
 

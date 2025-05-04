@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod structs;
 mod opcodes;
 use structs::*;
@@ -12,7 +13,7 @@ static MAX_MEM: usize = 1024 * 64;
 
 
 fn main() {
-    clearscreen::clear();
+    _ = clearscreen::clear();
 
     let mut cpu = CPU {
         program_counter: 0,
@@ -41,7 +42,6 @@ fn main() {
 
     cpu.reset();
     memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE as u16;
-    memory.data[0xFFFD] = 0xFFFE;
-    memory.data[0xFFFE] = INS_FORCE_INTERRUPT as u16;
-    cpu.execute(0xFFFF, &mut memory);
+    memory.data[0xFFFD] = 0xFFFC;
+    cpu.execute(8, &mut memory);
 }
