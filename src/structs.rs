@@ -30,28 +30,11 @@ impl Memory {
         }
     }
 
-    pub fn write_byte(&mut self, value: Word, cycles: &mut u32, address: Byte) {
-        self.data[address as usize] = value & 0xFF;
-        if *cycles == u32::MIN {
-            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop("No cycles left");
+    pub fn dump(&mut self) {
+        for mut y in 0..0xFFFF {
+            print!("{:#06X} : {:#06X} | ", y, self.data[y as usize]);
+            print!("\n");
         }
-        *cycles -= 1;
-    }
-
-    pub fn write_word(&mut self, value: Word, cycles: &mut u32, address: Byte) {
-        self.data[address as usize]     = value & 0xFF;
-        self.data[address as usize + 1] = value >> 8;
-        if *cycles == u32::MIN {
-            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop("No cycles left");
-        }
-        *cycles -= 1;
-        if *cycles == u32::MIN {
-            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
-            error_loop("No cycles left");
-        }
-        *cycles -= 1;
     }
 }
 
@@ -266,7 +249,7 @@ impl CPU {
 
                 INS_JUMP_TO_SUBROUTINE => {
                     let sub_address: Word = self.fetch_word(&mut cycles, &mut memory);
-                    memory.write_word(self.program_counter-1, &mut cycles, self.stack_pointer);
+                    self.write_word(self.program_counter-1, &mut cycles, self.stack_pointer, &mut memory);
                     self.program_counter = sub_address;
                     if self.stack_pointer == u8::MAX {
                         println!("Stack pointer would be out of bounds, stopping...");

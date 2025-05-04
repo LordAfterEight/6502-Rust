@@ -43,5 +43,9 @@ fn main() {
     cpu.reset();
     memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE as u16;
     memory.data[0xFFFD] = 0xFFFC;
-    cpu.execute(8, &mut memory);
+    memory.data[0x000A] = INS_LOAD_ACCUMULATOR_IMMEDIATE as u16;
+    memory.data[0x000B] = INS_JUMP_TO_SUBROUTINE as u16;
+    memory.data[0x000C] = 0xFFFB;
+    //cpu.execute(14, &mut memory);
+    memory.dump();
 }
