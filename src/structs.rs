@@ -4,7 +4,7 @@ type Byte = u8;
 type Word = u16;
 static MAX_MEM: usize = 1024 * 64;
 
-const CYCLES_WARNING: &str = "No cycles left, aborting execution...";
+const CYCLES_WARNING: &str = "No cycles left, stopping...";
 
 pub fn error_loop() {
     println!("Press CTRL + C to exit");
@@ -21,6 +21,15 @@ impl Memory {
         for i in 0..MAX_MEM {
             self.data[i] = 0;
         }
+    }
+    
+    pub fn write_byte(&mut self, value: Word, cycles: &mut u32, address: Byte) {
+        self.data[address as usize] = value;
+        if *cycles == u32::MIN {
+            println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+            error_loop();
+        }
+        *cycles -= 1;
     }
 
     pub fn write_word(&mut self, value: Word, cycles: &mut u32, address: Byte) {
@@ -160,6 +169,15 @@ impl CPU {
             let data = self.fetch_byte(&mut cycles, &memory);
             println!("Fetched instruction: {:#06X}", &data);
             match data {
+                INS_FORCE_INTERRUPT => {
+                    memory.write_byte(self.program_counter.into(), &mut cycles, self.stack_pointer);
+                    memory.write_byte(self.processor_status.into(), &mut cycles, self.stack_pointer);
+                    self.break_command = true;
+                    self.accumulator = memory.data[0xFFFF].try_into().unwrap();
+                    println!("Forced interrupt");
+                    error_loop();
+                },
+
                 INS_LOADACCUMULATOR_IMMEDIATE => {
                     let value: Byte = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
@@ -188,6 +206,10 @@ impl CPU {
                     let sub_address: Word = self.fetch_word(&mut cycles, &mut memory);
                     memory.write_word(self.program_counter-1, &mut cycles, self.stack_pointer);
                     self.program_counter = sub_address;
+                    if self.stack_pointer == u8::MAX {
+                        println!("Stack pointer would be out of bounds, stopping...");
+                        error_loop();
+                    }
                     self.stack_pointer += 1;
                     if cycles == u32::MIN {
                         println!("{}", CYCLES_WARNING.truecolor(200,100,0));

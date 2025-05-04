@@ -41,8 +41,7 @@ fn main() {
 
     cpu.reset();
     memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE as u16;
-    memory.data[0xFFFD] = 0x000A;
-    memory.data[0x000A] = INS_JUMP_TO_SUBROUTINE as u16;
-    memory.data[0x000B] = 0xFFFC;
-    cpu.execute(18, &mut memory);
+    memory.data[0xFFFD] = 0xFFFE;
+    memory.data[0xFFFE] = INS_FORCE_INTERRUPT as u16;
+    cpu.execute(0xFFFF, &mut memory);
 }
