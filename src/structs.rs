@@ -2,7 +2,7 @@ use crate::opcodes::*;
 use colored::Colorize;
 type Byte = u8;
 type Word = u16;
-static MAX_MEM: usize = 1024 * 64;
+static MAX_MEM: u32 = 1024 * 64;
 
 const CYCLES_WARNING: &str = "No cycles left, stopping...";
 
@@ -20,13 +20,13 @@ pub fn error_loop(error: &str) {
 
 
 pub struct Memory {
-    pub data: [Word; MAX_MEM]
+    pub data: [Word; MAX_MEM as usize]
 }
 
 impl Memory {
     pub fn initialise(&mut self) {
         for i in 0..MAX_MEM {
-            self.data[i] = 0;
+            self.data[i as usize] = 0;
         }
     }
 
@@ -51,9 +51,9 @@ pub struct CPU {
     pub stack_pointer: Byte,
 
     // Registers
-    pub accumulator: Byte,
-    pub idx_reg_x: Byte,
-    pub idx_reg_y: Byte,
+    pub accumulator: Word,
+    pub idx_reg_x: Word,
+    pub idx_reg_y: Word,
 
     pub processor_status: Byte,
 
@@ -114,7 +114,7 @@ impl CPU {
     }
 
 
-    pub fn set_zero_and_negative_flags(&mut self, register: Byte) {
+    pub fn set_zero_and_negative_flags(&mut self, register: Word) {
         self.zero_flag = register == 0;
         self.negative_flag = (register & 0b10000000) > 0;
     }
@@ -150,7 +150,7 @@ impl CPU {
     }
 
     // Fetches a byte from the PC address and returns it
-    pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Byte {
+    pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Word {
         let data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
             println!("Program counter would be out of bounds, aborting");
@@ -162,11 +162,11 @@ impl CPU {
             error_loop("Program counter out of bounds");
         }
         *cycles -= 1;
-        return data.try_into().unwrap()
+        return data
     }
 
     // Reads a byte from the PC address and returns it without increasing the PC
-    pub fn read_byte(&mut self, cycles: &mut u32, address: Word, memory: &Memory) -> Byte  {
+    pub fn read_byte(&mut self, cycles: &mut u32, address: Word, memory: &Memory) -> Word  {
         let data = memory.data[address as usize];
         if *cycles == u32::MIN {
             println!("{}", CYCLES_WARNING.truecolor(200,100,0));
@@ -226,19 +226,19 @@ impl CPU {
                 },
 
                 INS_LOAD_ACCUMULATOR_IMMEDIATE => {
-                    let value: Byte = self.fetch_byte(&mut cycles, memory);
+                    let value: Word = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
                     self.set_zero_and_negative_flags(self.accumulator);
                 },
 
                 INS_LOAD_ACCUMULATOR_ZERO_PAGE => {
-                    let zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
+                    let zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = self.read_byte(&mut cycles, zero_page_address.into(), memory);
                     self.set_zero_and_negative_flags(self.accumulator);
                 },
 
                 INS_LOAD_ACCUMULATOR_ZERO_PAGE_X => {
-                    let mut zero_page_address: Byte = self.fetch_byte(&mut cycles, memory);
+                    let mut zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
                     zero_page_address += self.idx_reg_x;
                     if cycles == u32::MIN {
                         println!("{}", CYCLES_WARNING.truecolor(200,100,0));
@@ -250,8 +250,19 @@ impl CPU {
                 },
 
                 INS_LOAD_X_REGISTER_IMMEDIATE => {
-                    let value: Byte = self.fetch_byte(&mut cycles, memory);
+                    let value: Word = self.fetch_byte(&mut cycles, memory);
                     self.idx_reg_x = value;
+                    self.set_zero_and_negative_flags(self.accumulator);
+                },
+
+                INS_STORE_ACCUMULATOR_ZERO_PAGE => {
+                    let zero_page_address: Word = self.fetch_byte(&mut cycles, memory) as u16;
+                    memory.data[zero_page_address as usize] = self.accumulator as u16;
+                    if cycles == u32::MIN {
+                        println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+                        error_loop("No cycles left");
+                    }
+                    cycles -= 1;
                     self.set_zero_and_negative_flags(self.accumulator);
                 },
 
