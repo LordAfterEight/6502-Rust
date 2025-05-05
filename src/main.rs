@@ -41,6 +41,7 @@ fn main() {
     };
 
     cpu.reset();
+    memory.initialise();
     memory.data[0xFFFC] = INS_JUMP_ABSOLUTE as u16;
     memory.data[0xFFFD] = 0xF000;
     memory.data[0xF000] = INS_LOAD_ACCUMULATOR_IMMEDIATE as u16;

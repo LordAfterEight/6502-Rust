@@ -26,7 +26,7 @@ pub struct Memory {
 impl Memory {
     pub fn initialise(&mut self) {
         for i in 0..MAX_MEM {
-            self.data[i as usize] = 0;
+            self.data[i as usize] = 0xEA;
         }
     }
 
@@ -39,7 +39,7 @@ impl Memory {
                     self.data[out+x as usize]
                 ));
                 let mut out_string = string.red();
-                if self.data[out+x as usize] > 0x0000 {
+                if self.data[out+x as usize] != 0xEA {
                     out_string = string.green();
                 }
                 print!("{:#06X} : {} | ",
@@ -132,7 +132,7 @@ impl CPU {
         // First Byte
         let mut data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
-            println!("Program counter would be out of bounds, stopping execution...");
+            println!("Program counter would be out of bounds, stopping...");
             error_loop("Program counter out of bounds");
         }
         self.program_counter += 1;
@@ -140,7 +140,7 @@ impl CPU {
         // Second Byte
         data |= memory.data[(self.program_counter << 8) as usize];
         if self.program_counter == u16::MAX {
-            println!("Program counter would be out of bounds, aborting");
+            println!("Program counter would be out of bounds, stopping...");
             error_loop("Program counter out of bounds");
         }
         self.program_counter += 1;
@@ -161,7 +161,7 @@ impl CPU {
     pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Word {
         let data = memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
-            println!("Program counter would be out of bounds, aborting");
+            println!("Program counter would be out of bounds, stopping");
             error_loop("Program counter out of bounds");
         }
         self.program_counter += 1;
@@ -284,6 +284,20 @@ impl CPU {
                     }
                     cycles -= 1;
 
+                },
+
+                INS_NO_OPERATION => {
+                    println!("Doing nothing...");
+                    if self.program_counter == u16::MAX {
+                        println!("Program counter would be out of bounds, stopping");
+                        error_loop("Program counter out of bounds");
+                    }
+                    self.program_counter += 1;
+                    if cycles == u32::MIN {
+                        println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+                        error_loop("No cycles left");
+                    }
+                    cycles -= 1;
                 },
 
                 INS_JUMP_TO_SUBROUTINE => {
