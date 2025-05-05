@@ -32,7 +32,7 @@ impl Memory {
 
     pub fn dump(&mut self) {
         let mut out = 0;
-        for mut y in 0..0xFFFF/4 {
+        for mut y in 0..0xFFFF/8+1 {
             for mut x in 0..8 {
                 let mut string = String::from(format!(
                     "{:#06X}",
@@ -48,7 +48,7 @@ impl Memory {
                 );
             }
             print!("\n");
-            out+=4
+            out+=8
         }
         println!("{}","\n[i] Dumped memory".yellow());
     }
