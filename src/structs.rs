@@ -31,10 +31,18 @@ impl Memory {
     }
 
     pub fn dump(&mut self) {
-        for mut y in 0..0xFFFF {
-            print!("{:#06X} : {:#06X} | ", y, self.data[y as usize]);
+        let mut out = 0;
+        for mut y in 0..0xFFFF/4+1 {
+            for mut x in 0..4 {
+                print!("{:#06X} : {:#06X} | ",
+                    out+x,
+                    self.data[out+x as usize],
+                );
+            }
             print!("\n");
+            out+=4
         }
+        println!("{}","\n[i] Dumped memory".yellow());
     }
 }
 
@@ -64,7 +72,7 @@ impl CPU {
     pub fn reset(&mut self) {
         // Set addresses
         self.program_counter = 0xFFFC;
-        self.stack_pointer = 0x010;
+        self.stack_pointer = 0x010; // stack location: 0x0100 - 0x01FF
 
         // Set values
         self.accumulator = 0;
