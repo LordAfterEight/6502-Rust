@@ -1,5 +1,5 @@
 use crate::opcodes::*;
-use colored::Colorize;
+use colored::{Colorize, ColoredString};
 type Byte = u8;
 type Word = u16;
 static MAX_MEM: u32 = 1024 * 64;
@@ -34,9 +34,17 @@ impl Memory {
         let mut out = 0;
         for mut y in 0..0xFFFF/4+1 {
             for mut x in 0..4 {
-                print!("{:#06X} : {:#06X} | ",
+                let mut string = String::from(format!(
+                    "{:#06X}",
+                    self.data[out+x as usize]
+                ));
+                let mut out_string = string.red();
+                if self.data[out+x as usize] > 0x0000 {
+                    out_string = string.green();
+                }
+                print!("{:#06X} : {} | ",
                     out+x,
-                    self.data[out+x as usize],
+                    out_string,
                 );
             }
             print!("\n");
