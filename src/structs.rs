@@ -32,8 +32,8 @@ impl Memory {
 
     pub fn dump(&mut self) {
         let mut out = 0;
-        for mut y in 0..0xFFFF/4+1 {
-            for mut x in 0..4 {
+        for mut y in 0..0xFFFF/4 {
+            for mut x in 0..8 {
                 let mut string = String::from(format!(
                     "{:#06X}",
                     self.data[out+x as usize]
@@ -230,6 +230,7 @@ impl CPU {
                     self.interrupt_disable = true;
                     self.break_command = true;
                     println!("Forced interrupt");
+                    memory.dump();
                     error_loop("Forced interrupt");
                 },
 
