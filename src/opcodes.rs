@@ -23,8 +23,13 @@ pub const INS_LOAD_Y_REGISTER_ZERO_PAGE_X: Word = 0xB4;
 pub const INS_STORE_ACCUMULATOR_ZERO_PAGE: Word = 0x85;
 pub const INS_STORE_ACCUMULATOR_ZERO_PAGE_X: Word = 0x95;
 
-// Jump To Subroutine 
+// Jump to / Return from subroutine
 pub const INS_JUMP_TO_SUBROUTINE: Word = 0x20;
+pub const INS_RETURN_FROM_SUBROUTINE: Word = 0x60;
+
+// Jump
+pub const INS_JUMP_ABSOLUTE: Word = 0x4C;
+pub const INS_JUMP_INDIRECT: Word = 0x6C;
 
 // System calls
 pub const INS_FORCE_INTERRUPT : Word = 0x00;

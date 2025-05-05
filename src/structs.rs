@@ -275,6 +275,17 @@ impl CPU {
                     self.set_zero_and_negative_flags(self.accumulator);
                 },
 
+                INS_JUMP_ABSOLUTE => {
+                    let sub_address: Word = self.fetch_byte(&mut cycles, &mut memory) as u16;
+                    self.program_counter = sub_address;
+                    if cycles == u32::MIN {
+                        println!("{}", CYCLES_WARNING.truecolor(200,100,0));
+                        error_loop("No cycles left");
+                    }
+                    cycles -= 1;
+
+                },
+
                 INS_JUMP_TO_SUBROUTINE => {
                     let sub_address: Word = self.fetch_word(&mut cycles, &mut memory);
                     self.write_word(self.program_counter-1, &mut cycles, self.stack_pointer, &mut memory);
