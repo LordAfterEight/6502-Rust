@@ -44,10 +44,6 @@ fn main() {
     memory.initialise();
     memory.data[0xFFFC] = INS_JUMP_ABSOLUTE as u16;
     memory.data[0xFFFD] = 0xF000;
-    memory.data[0xF000] = INS_LOAD_ACCUMULATOR_IMMEDIATE as u16;
-    memory.data[0xF001] = 0xE621;
-    memory.data[0xF002] = INS_STORE_ACCUMULATOR_ZERO_PAGE as u16;
-    memory.data[0xF003] = 0xF069;
-    cpu.execute(8, &mut memory);
-    memory.dump();
+    //memory.data[0xFFFE] = INS_FORCE_INTERRUPT as u16;
+    cpu.execute(1, &mut memory);
 }
