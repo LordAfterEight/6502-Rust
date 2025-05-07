@@ -1,11 +1,11 @@
 use crate::opcodes::*;
 use colored::{Colorize, ColoredString};
+use std::io::Write;
 type Byte = u8;
 type Word = u16;
 static MAX_MEM: u32 = 1024 * 64;
 
 const CLOCK_SPEED: u64 = 1 / 1; // Second number is desired frequency in Hz
-
 
 
 pub struct Memory {
@@ -19,7 +19,7 @@ impl Memory {
         }
     }
 
-    pub fn dump(&mut self) {
+    /*pub fn dump(&mut self) {
         let mut out = 0;
         for mut y in 0..0xFFFF/8+1 {
             for mut x in 0..8 {
@@ -40,6 +40,14 @@ impl Memory {
             out+=8
         }
         println!("{}","\n[i] Dumped memory".yellow());
+    }*/
+
+    pub fn dump(&mut self) {
+        let mut file = std::fs::File::options().write(true).open("hex.bin").expect("Unable to open file");
+        for value in self.data {
+            write!(&mut file, "{:#06X}  ", value).expect("Unable to write to file");
+        }
+        println!("{}","[i] Dumped memory".yellow());
     }
 }
 
@@ -93,7 +101,7 @@ impl CPU {
         cycles: u32,
         memory: &mut Memory
     ) {
-        //memory.dump();
+        memory.dump();
         println!("\n{} Line:{} | Cycle:{}\n{} {}\n\n{}",
             "[!] Entered safe loop at:".truecolor(200,100,0),
             line,
@@ -200,7 +208,6 @@ impl CPU {
                     self.interrupt_disable = true;
                     self.break_command = true;
                     println!("Forced interrupt");
-                    //memory.dump();
                     self.error_loop("Forced interrupt", 205, cycles, memory);
                 },
 
