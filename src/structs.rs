@@ -42,7 +42,7 @@ impl Memory {
         println!("{}","\n[i] Dumped memory".yellow());
     }
 
-    pub fn dumps(&mut self) {
+    pub fn dump_to_file(&mut self) {
         let mut file = std::fs::File::options().write(true).open("hex.bin").expect("Unable to open file");
         for value in self.data {
             write!(&mut file, "{:#06X}  ", value).expect("Unable to write to file");
