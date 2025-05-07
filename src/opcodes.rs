@@ -33,4 +33,4 @@ pub const INS_JUMP_INDIRECT: Word = 0x6C;
 
 // System calls
 pub const INS_FORCE_INTERRUPT: Word = 0x00;
-pub const INS_NO_OPERATION: Word = 0xEA;
+pub const INS_NO_OPERATION: Word = 0x00EA;

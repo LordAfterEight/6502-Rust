@@ -143,14 +143,16 @@ impl CPU {
     }
 
     // Fetches a byte from the PC address and returns it
-    pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &mut Memory) -> Word {
+    pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Word {
         let data = memory.data[self.program_counter as usize];
         println!("Fetched instruction {:#06X} at {:#06X}", &data, self.program_counter);
         if self.program_counter == u16::MAX {
             self.program_counter = 0x0000;
         }
         self.program_counter += 1;
+        println!("PC: {:#06X}", self.program_counter);
         *cycles += 1;
+        std::thread::sleep(std::time::Duration::from_secs(1));
         return data
     }
 
@@ -184,6 +186,8 @@ impl CPU {
     pub fn execute(&mut self, mut cycles: u32, mut memory: &mut Memory) {
         while cycles > 0 {
 
+            println!("Fetching instruction...");
+            std::thread::sleep(std::time::Duration::from_secs(1));
             let data = self.fetch_byte(&mut cycles, memory);
 
             match data {
@@ -197,8 +201,25 @@ impl CPU {
                     self.interrupt_disable = true;
                     self.break_command = true;
                     println!("Forced interrupt");
-                    memory.dump();
-                    self.error_loop("Forced interrupt", 206, cycles, memory);
+                    //memory.dump();
+                    self.error_loop("Forced interrupt", 202, cycles, memory);
+                },
+
+                INS_NO_OPERATION => {
+                    println!("Doing nothing...");
+                    if self.program_counter == u16::MAX {
+                        self.program_counter = 0x0000;
+                    }
+                    cycles += 1;
+                    continue;
+                },
+
+                INS_JUMP_ABSOLUTE => {
+                    let address = self.fetch_byte(&mut cycles, &memory);
+                    self.program_counter = address;
+                    println!("Address to jump to: {:#06X}", address);
+                    println!("Set PC to: {:#06X}", self.program_counter);
+                    cycles += 1;
                 },
 
                 INS_LOAD_ACCUMULATOR_IMMEDIATE => {
@@ -254,24 +275,6 @@ impl CPU {
                     self.set_zero_and_negative_flags(self.accumulator);
                 },
 
-                INS_JUMP_ABSOLUTE => {
-                    self.program_counter = self.fetch_byte(&mut cycles, &mut memory);
-                    println!("Set PC to: {}", self.program_counter);
-                    cycles += 1;
-                    continue;
-
-                },
-
-                INS_NO_OPERATION => {
-                    println!("Doing nothing...");
-                    if self.program_counter == u16::MAX {
-                        self.program_counter = 0x0000;
-                    }
-                    //self.program_counter += 1;
-                    cycles += 1;
-                    continue;
-                },
-
                 INS_JUMP_TO_SUBROUTINE => {
                     let sub_address: Word = self.fetch_word(&mut cycles, &mut memory);
                     self.write_word(self.program_counter-1, &mut cycles, self.stack_pointer, &mut memory);
@@ -282,7 +285,6 @@ impl CPU {
                     }
                     self.stack_pointer += 1;
                     cycles += 1;
-
                 },
 
                 INS_RETURN_FROM_SUBROUTINE => {
@@ -298,6 +300,7 @@ impl CPU {
 
                 _ => println!("Invalid opcode: {:#06X}", &data)
             };
+            std::thread::sleep(std::time::Duration::from_secs(1));
         }
         println!("Finished executing all instructions in {} cycles", cycles);
     }
