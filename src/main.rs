@@ -42,14 +42,13 @@ fn main() {
 
     cpu.reset();
     memory.initialise();
-    memory.data[0xFFFC] = INS_JUMP_ABSOLUTE as u16;
+    memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE as u16;
     memory.data[0xFFFD] = 0xF000;
     memory.data[0xF000] = INS_LOAD_ACCUMULATOR_IMMEDIATE as u16;
     memory.data[0xF001] = 0x82;
     memory.data[0xF002] = INS_STORE_ACCUMULATOR_ZERO_PAGE as u16;
     memory.data[0xF003] = 0xFEAA;
-    memory.data[0xF004] = INS_JUMP_ABSOLUTE as u16;
-    memory.data[0xF005] = 0xFFFF;
-    memory.data[0xFFFF] = INS_FORCE_INTERRUPT as u16;
+    memory.data[0xF004] = INS_RETURN_FROM_SUBROUTINE as u16;
+    memory.data[0xFFFE] = INS_FORCE_INTERRUPT as u16;
     cpu.execute(1, &mut memory);
 }

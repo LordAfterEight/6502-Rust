@@ -69,7 +69,7 @@ impl CPU {
     pub fn reset(&mut self) {
         // Set addresses
         self.program_counter = 0xFFFC;
-        self.stack_pointer = 0x0100; // stack location: 0x0100 - 0x01FF
+        self.stack_pointer = 0xF100; // stack location: 0x0100 - 0x01FF
 
         // Set values
         self.accumulator = 0;
@@ -126,14 +126,14 @@ impl CPU {
     // Fetches a word from the PC address and returns it
     pub fn fetch_word(&mut self, cycles: &mut u32, memory: &mut Memory) -> Word {
         // First Byte
-        let mut data = memory.data[self.program_counter as usize];
+        let mut data = memory.data[(self.program_counter << 8) as usize];
         if self.program_counter == u16::MAX {
             self.program_counter = 0x0000;
         }
         self.program_counter += 1;
 
         // Second Byte
-        data |= memory.data[(self.program_counter << 8) as usize];
+        data |= memory.data[self.program_counter as usize];
         if self.program_counter == u16::MAX {
             self.program_counter = 0x0000;
         }
@@ -200,7 +200,7 @@ impl CPU {
                     self.interrupt_disable = true;
                     self.break_command = true;
                     println!("Forced interrupt");
-                    //memory.dump();
+                    memory.dump();
                     self.error_loop("Forced interrupt", 205, cycles, memory);
                 },
 
@@ -218,6 +218,34 @@ impl CPU {
                     self.program_counter = address;
                     println!("Jumped to address {:#06X}\n", self.program_counter);
                     cycles += 1;
+                },
+
+                INS_JUMP_TO_SUBROUTINE => {
+                    let sub_address: Word = self.fetch_byte(&mut cycles, &mut memory);
+                    self.write_byte(self.program_counter-1, &mut cycles, self.stack_pointer, &mut memory);
+                    println!("Jumping from {:#06X} to subroutine at {:#06X}",
+                        self.program_counter,
+                        sub_address
+                    );
+                    self.program_counter = sub_address;
+                    if self.stack_pointer == u16::MAX {
+                        println!("Stack pointer would be out of bounds, stopping...\n");
+                        self.error_loop("Stack pointer out of bounds", 229, cycles, memory);
+                    }
+                    self.stack_pointer += 1;
+                    cycles += 1;
+                },
+
+                INS_RETURN_FROM_SUBROUTINE => {
+                    self.program_counter = self.read_byte(&mut cycles, self.stack_pointer - 1, &mut memory) + 1;
+                    println!("Returned to {:#06X} from subroutine", self.program_counter);
+                    if self.stack_pointer == u16::MAX {
+                        println!("Stack pointer would be out of bounds, stopping...\n");
+                        self.error_loop("Stack pointer out of bounds", 303, cycles, memory);
+                    }
+                    self.stack_pointer += 1;
+                    cycles += 1;
+
                 },
 
                 INS_LOAD_ACCUMULATOR_IMMEDIATE => {
@@ -280,29 +308,6 @@ impl CPU {
                     memory.data[zero_page_address as usize] = self.idx_reg_y as u16;
                     cycles += 1;
                     self.set_zero_and_negative_flags(self.accumulator);
-                },
-
-                INS_JUMP_TO_SUBROUTINE => {
-                    let sub_address: Word = self.fetch_word(&mut cycles, &mut memory);
-                    self.write_word(self.program_counter-1, &mut cycles, self.stack_pointer, &mut memory);
-                    self.program_counter = sub_address;
-                    if self.stack_pointer == u16::MAX {
-                        println!("Stack pointer would be out of bounds, stopping...\n");
-                        self.error_loop("Stack pointer out of bounds", 293, cycles, memory);
-                    }
-                    self.stack_pointer += 1;
-                    cycles += 1;
-                },
-
-                INS_RETURN_FROM_SUBROUTINE => {
-                    self.program_counter = self.read_byte(&mut cycles, self.stack_pointer.into(), &mut memory) -1;
-                    if self.stack_pointer == u16::MAX {
-                        println!("Stack pointer would be out of bounds, stopping...\n");
-                        self.error_loop("Stack pointer out of bounds", 303, cycles, memory);
-                    }
-                    self.stack_pointer += 1;
-                    cycles += 1;
-
                 },
 
                 _ => println!("Invalid opcode: {:#06X}", &data)
