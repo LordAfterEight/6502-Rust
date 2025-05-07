@@ -4,7 +4,7 @@ type Byte = u8;
 type Word = u16;
 static MAX_MEM: u32 = 1024 * 64;
 
-const CYCLES_WARNING: &str = "No cycles left, stopping...";
+const CLOCK_SPEED: u64 = 1 / 1; // Second number is desired frequency in Hz
 
 
 
@@ -69,7 +69,7 @@ impl CPU {
     pub fn reset(&mut self) {
         // Set addresses
         self.program_counter = 0xFFFC;
-        self.stack_pointer = 0xF100; // stack location: 0x0100 - 0x01FF
+        self.stack_pointer = 0x0100; // stack location: 0x0100 - 0x01FF
 
         // Set values
         self.accumulator = 0;
@@ -146,12 +146,12 @@ impl CPU {
     pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Word {
         let data = memory.data[self.program_counter as usize];
         println!("Fetched instruction {:#06X} at {:#06X}", &data, self.program_counter);
+        std::thread::sleep(std::time::Duration::from_secs(CLOCK_SPEED));
         if self.program_counter == u16::MAX {
             self.program_counter = 0x0000;
         }
         self.program_counter += 1;
         *cycles += 1;
-        std::thread::sleep(std::time::Duration::from_secs(1));
         return data
     }
 
@@ -186,7 +186,7 @@ impl CPU {
         while cycles > 0 {
 
             println!("\nFetching instruction...");
-            std::thread::sleep(std::time::Duration::from_secs(1));
+            std::thread::sleep(std::time::Duration::from_secs(CLOCK_SPEED));
             let data = self.fetch_byte(&mut cycles, memory);
 
             match data {
@@ -200,7 +200,7 @@ impl CPU {
                     self.interrupt_disable = true;
                     self.break_command = true;
                     println!("Forced interrupt");
-                    memory.dump();
+                    //memory.dump();
                     self.error_loop("Forced interrupt", 205, cycles, memory);
                 },
 
@@ -312,7 +312,7 @@ impl CPU {
 
                 _ => println!("Invalid opcode: {:#06X}", &data)
             };
-            std::thread::sleep(std::time::Duration::from_secs(1));
+            std::thread::sleep(std::time::Duration::from_secs(CLOCK_SPEED));
         }
         println!("Finished executing all instructions in {} cycles", cycles);
     }
