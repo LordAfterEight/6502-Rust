@@ -49,6 +49,6 @@ fn main() {
     memory.data[0xF002] = INS_STORE_ACCUMULATOR_ZERO_PAGE as u16;
     memory.data[0xF003] = 0xFEAA;
     memory.data[0xF004] = INS_RETURN_FROM_SUBROUTINE as u16;
-    memory.data[0xFFFE] = INS_FORCE_INTERRUPT as u16;
+    memory.data[0x0001] = INS_FORCE_INTERRUPT as u16;
     cpu.execute(1, &mut memory);
 }

@@ -19,7 +19,7 @@ impl Memory {
         }
     }
 
-    /*pub fn dump(&mut self) {
+    pub fn dump(&mut self) {
         let mut out = 0;
         for mut y in 0..0xFFFF/8+1 {
             for mut x in 0..8 {
@@ -40,9 +40,9 @@ impl Memory {
             out+=8
         }
         println!("{}","\n[i] Dumped memory".yellow());
-    }*/
+    }
 
-    pub fn dump(&mut self) {
+    pub fn dumps(&mut self) {
         let mut file = std::fs::File::options().write(true).open("hex.bin").expect("Unable to open file");
         for value in self.data {
             write!(&mut file, "{:#06X}  ", value).expect("Unable to write to file");
@@ -101,7 +101,7 @@ impl CPU {
         cycles: u32,
         memory: &mut Memory
     ) {
-        memory.dump();
+        //memory.dump();
         println!("\n{} Line:{} | Cycle:{}\n{} {}\n\n{}",
             "[!] Entered safe loop at:".truecolor(200,100,0),
             line,
