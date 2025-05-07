@@ -150,7 +150,6 @@ impl CPU {
             self.program_counter = 0x0000;
         }
         self.program_counter += 1;
-        println!("PC: {:#06X}", self.program_counter);
         *cycles += 1;
         std::thread::sleep(std::time::Duration::from_secs(1));
         return data
@@ -186,7 +185,7 @@ impl CPU {
     pub fn execute(&mut self, mut cycles: u32, mut memory: &mut Memory) {
         while cycles > 0 {
 
-            println!("Fetching instruction...");
+            println!("\nFetching instruction...");
             std::thread::sleep(std::time::Duration::from_secs(1));
             let data = self.fetch_byte(&mut cycles, memory);
 
@@ -206,7 +205,7 @@ impl CPU {
                 },
 
                 INS_NO_OPERATION => {
-                    println!("Doing nothing...");
+                    println!("Doing nothing...\n");
                     if self.program_counter == u16::MAX {
                         self.program_counter = 0x0000;
                     }
@@ -217,8 +216,7 @@ impl CPU {
                 INS_JUMP_ABSOLUTE => {
                     let address = self.fetch_byte(&mut cycles, &memory);
                     self.program_counter = address;
-                    println!("Address to jump to: {:#06X}", address);
-                    println!("Set PC to: {:#06X}", self.program_counter);
+                    println!("Jumped to address {:#06X}\n", self.program_counter);
                     cycles += 1;
                 },
 
@@ -226,12 +224,18 @@ impl CPU {
                     let value: Word = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
                     self.set_zero_and_negative_flags(self.accumulator);
+                    println!("Loaded value {:#06X} into register A\n",
+                        value
+                    );
                 },
 
                 INS_LOAD_ACCUMULATOR_ZERO_PAGE => {
                     let zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = self.read_byte(&mut cycles, zero_page_address.into(), memory);
                     self.set_zero_and_negative_flags(self.accumulator);
+                    println!("Loaded value {:#06X} into register A\n",
+                        zero_page_address
+                    );
                 },
 
                 INS_LOAD_ACCUMULATOR_ZERO_PAGE_X => {
@@ -259,6 +263,9 @@ impl CPU {
                     memory.data[zero_page_address as usize] = self.accumulator as u16;
                     cycles += 1;
                     self.set_zero_and_negative_flags(self.accumulator);
+                    println!("Stored register A content to address {:#06X}\n",
+                        zero_page_address
+                    );
                 },
 
                 INS_STORE_X_REGISTER_ZERO_PAGE => {
@@ -280,8 +287,8 @@ impl CPU {
                     self.write_word(self.program_counter-1, &mut cycles, self.stack_pointer, &mut memory);
                     self.program_counter = sub_address;
                     if self.stack_pointer == u16::MAX {
-                        println!("Stack pointer would be out of bounds, stopping...");
-                        self.error_loop("Stack pointer out of bounds", 284, cycles, memory);
+                        println!("Stack pointer would be out of bounds, stopping...\n");
+                        self.error_loop("Stack pointer out of bounds", 293, cycles, memory);
                     }
                     self.stack_pointer += 1;
                     cycles += 1;
@@ -290,8 +297,8 @@ impl CPU {
                 INS_RETURN_FROM_SUBROUTINE => {
                     self.program_counter = self.read_byte(&mut cycles, self.stack_pointer.into(), &mut memory) -1;
                     if self.stack_pointer == u16::MAX {
-                        println!("Stack pointer would be out of bounds, stopping...");
-                        self.error_loop("Stack pointer out of bounds", 294, cycles, memory);
+                        println!("Stack pointer would be out of bounds, stopping...\n");
+                        self.error_loop("Stack pointer out of bounds", 303, cycles, memory);
                     }
                     self.stack_pointer += 1;
                     cycles += 1;
