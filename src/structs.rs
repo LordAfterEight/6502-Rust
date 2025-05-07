@@ -202,7 +202,7 @@ impl CPU {
                     self.break_command = true;
                     println!("Forced interrupt");
                     //memory.dump();
-                    self.error_loop("Forced interrupt", 202, cycles, memory);
+                    self.error_loop("Forced interrupt", 205, cycles, memory);
                 },
 
                 INS_NO_OPERATION => {
@@ -281,7 +281,7 @@ impl CPU {
                     self.program_counter = sub_address;
                     if self.stack_pointer == u16::MAX {
                         println!("Stack pointer would be out of bounds, stopping...");
-                        self.error_loop("Stack pointer out of bounds", 285, cycles, memory);
+                        self.error_loop("Stack pointer out of bounds", 284, cycles, memory);
                     }
                     self.stack_pointer += 1;
                     cycles += 1;
@@ -291,7 +291,7 @@ impl CPU {
                     self.program_counter = self.read_byte(&mut cycles, self.stack_pointer.into(), &mut memory) -1;
                     if self.stack_pointer == u16::MAX {
                         println!("Stack pointer would be out of bounds, stopping...");
-                        self.error_loop("Stack pointer out of bounds", 296, cycles, memory);
+                        self.error_loop("Stack pointer out of bounds", 294, cycles, memory);
                     }
                     self.stack_pointer += 1;
                     cycles += 1;
