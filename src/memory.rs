@@ -14,6 +14,19 @@ impl Memory {
         for i in 0..MAX_MEM {
             self.data[i as usize] = INS_NO_OPERATION;
         }
+
+        // Write letters A - Z (ALL CAPITAL) to addresses 0xF200 - 0xF21A
+        let mut letter_increment = 0;
+        for i in 0xF200..0xF21A {
+            self.data[i as usize] = 0x41+letter_increment;
+            letter_increment += 1;
+        }
+        // Write letters a - z (all lowercase) to addresses 0xF200 - 0xF21A
+        let mut letter_increment = 0;
+        for i in 0xF230..0xF24A {
+            self.data[i as usize] = 0x61+letter_increment;
+            letter_increment += 1;
+        }
     }
 
     pub fn dump(&mut self) {

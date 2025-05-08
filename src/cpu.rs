@@ -1,11 +1,22 @@
 use crate::{opcodes::*, memory::*};
 use crate::colored::Colorize;
+use crate::eventhandler::*;
+use crate::crossterm::{
+    event::KeyCode,
+    ExecutableCommand,
+    execute,
+    cursor::{
+        SetCursorStyle,
+        MoveToPreviousLine,
+        MoveRight,
+        EnableBlinking
+    }
+};
 use std::io::Write;
 type Byte = u8;
 type Word = u16;
 static MAX_MEM: u32 = 1024 * 64;
 
-const CLOCK_SPEED: u64 = 1 / 1; // Second number is desired frequency in Hz
 
 
 pub struct CPU {
@@ -26,7 +37,7 @@ pub struct CPU {
     pub decimal_mode: bool,
     pub break_command: bool,
     pub overflow_flag: bool,
-    pub negative_flag: bool
+    pub negative_flag: bool,
 }
 
 impl CPU {
@@ -59,16 +70,49 @@ impl CPU {
         memory: &mut Memory
     ) {
         //memory.dump();
-        println!("\n{} Line:{} | Cycle:{}\n{} {}\n\n{}",
+        println!("\n{} Line:{} | Cycle:{}\n{} {}\n",
             "[!] Entered safe loop at:".truecolor(200,100,0),
             line,
             cycles,
             "[i] Reason:".yellow(),
             error,
-            "Press CTRL + C to exit".cyan()
         );
-        println!("PC: {:#06X}", self.program_counter);
+        let mut help_counter = 0;
         loop {
+            if help_counter == 5 {
+                help_counter = 0;
+                println!(
+                    "{}",
+                    "q => exit\nr => reset\nd => dump memory\nh => help\n".cyan()
+                );
+            }
+            println!("[cpu] <= $");
+            std::thread::sleep(std::time::Duration::from_millis(100));
+            execute!(
+                std::io::stdout(),
+                SetCursorStyle::BlinkingUnderScore,
+                MoveToPreviousLine(1),
+                MoveRight(11),
+                EnableBlinking
+            );
+            let mut input = read_event();
+            match input {
+                KeyCode::Char('q') => std::process::exit(0),
+                KeyCode::Char('r') => {self.reset(); break},
+                KeyCode::Char('d') => memory.dump(),
+                KeyCode::Char('h') => {
+                    println!(
+                        "{}",
+                        "q => exit\nr => reset\nd => dump memory\n".cyan()
+                    );
+                },
+                KeyCode::Enter => continue,
+                KeyCode::Char(' ') => continue,
+                _ => {
+                    println!("Invalid command: {}\n", input);
+                    help_counter += 1;
+                }
+            }
         }
     }
 
@@ -111,7 +155,6 @@ impl CPU {
     pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Word {
         let data = memory.data[self.program_counter as usize];
         println!("Fetched instruction {:#06X} at {:#06X}", &data, self.program_counter);
-        std::thread::sleep(std::time::Duration::from_secs(CLOCK_SPEED));
         if self.program_counter == u16::MAX {
             self.program_counter = 0x0000;
         }
@@ -147,11 +190,12 @@ impl CPU {
     }
 
     // Executes an instruction
-    pub fn execute(&mut self, mut cycles: u32, mut memory: &mut Memory) {
-        while cycles > 0 {
+    pub fn execute(&mut self, mut speed: u64, mut memory: &mut Memory) {
+        let clock_speed: u64 = speed;
+        let mut cycles = 0;
+        while cycles >= 0 {
 
             println!("\nFetching instruction...");
-            std::thread::sleep(std::time::Duration::from_secs(CLOCK_SPEED));
             let data = self.fetch_byte(&mut cycles, memory);
 
             match data {
@@ -274,7 +318,7 @@ impl CPU {
 
                 _ => println!("Invalid opcode: {:#06X}", &data)
             };
-            std::thread::sleep(std::time::Duration::from_secs(CLOCK_SPEED));
+            std::thread::sleep(std::time::Duration::from_millis(clock_speed));
         }
         // println!("Finished executing all instructions in {} cycles", cycles);
     }
