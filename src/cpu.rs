@@ -189,8 +189,7 @@ impl CPU {
     }
 
     // Executes an instruction
-    pub fn execute(&mut self, mut speed: u64, mut memory: &mut Memory, mut gpu: &mut GPU) {
-        let clock_speed: u64 = speed;
+    pub fn execute(&mut self, mut memory: &mut Memory, mut gpu: &mut GPU) {
         let mut cycles = 0;
         while cycles >= 0 {
 
@@ -244,9 +243,31 @@ impl CPU {
 
                 },
 
+                INS_WAIT_FOR_INPUT => {
+                    let input = read_event();
+                    match input {
+                        KeyCode::Char('q') => std::process::exit(0),
+                        KeyCode::Char('d') => memory.dump(),
+                        KeyCode::Char('h') => {
+                            self.program_counter = 0xEFA0;
+                            continue;
+                        },
+                        KeyCode::Char('r') => {
+                            self.reset();
+                            _ = clearscreen::clear();
+                            continue;
+                        },
+                        _ => {self.program_counter = 0xEFA0;}
+                    }
+                },
+
                 INS_GPU_DRAW_AT_CURSOR_POSITION => {
                     let letter: Word = self.fetch_byte(&mut cycles, memory);
                     gpu.write_letter(letter, &mut memory);
+                },
+
+                INS_GPU_MOVE_CURSOR_DOWN => {
+                    gpu.move_down(1);
                 },
 
                 INS_LOAD_ACCUMULATOR_IMMEDIATE => {
@@ -307,7 +328,6 @@ impl CPU {
 
                 _ => println!("Invalid opcode: {:#06X}", &data)
             };
-            std::thread::sleep(std::time::Duration::from_millis(clock_speed));
         }
         // println!("Finished executing all instructions in {} cycles", cycles);
     }

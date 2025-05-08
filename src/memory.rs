@@ -57,6 +57,101 @@ impl Memory {
         self.data[0xF24D] = 0x0026; // &
         self.data[0xF24E] = 0x003F; // ?
         self.data[0xF24F] = 0x0040; // @
+
+
+        // Make CPU always jump to command line routine
+        self.data[0xFFFC] = INS_JUMP_ABSOLUTE;
+        self.data[0xFFFD] = 0xF000;
+
+
+        // Draw chars for command line - COMMAND LINE ROUTINE STARTS HERE
+        for mut i in 0xF000..0xF015 {
+            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
+            i+=2;
+        }
+        self.data[0xF001] = 0xF21E;
+        self.data[0xF003] = 0xF202;
+        self.data[0xF005] = 0xF20F;
+        self.data[0xF007] = 0xF214;
+        self.data[0xF009] = 0xF21F;
+        self.data[0xF00B] = 0xF1FF;
+        self.data[0xF00D] = 0xF23B;
+        self.data[0xF00F] = 0xF23D;
+        self.data[0xF011] = 0xF1FF;
+        self.data[0xF013] = 0xF21D;
+        self.data[0xF015] = 0xF1FF;
+
+        // Command line routine
+        self.data[0xF016] = INS_WAIT_FOR_INPUT;
+        self.data[0xF017] = INS_JUMP_ABSOLUTE;
+        self.data[0xF018] = 0xF000;
+
+        // Command line help display routine
+        for mut i in 0xEFA1..0xEFB2 {
+            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
+            i+=2;
+        }
+        for mut i in 0xEFB4..0xEFC7 {
+            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
+            i+=2;
+        }
+        for mut i in 0xEFCA..0xEFDB {
+            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
+            i+=2;
+        }
+        for mut i in 0xEFDE..0xEFEF {
+            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
+            i+=2;
+        }
+        self.data[0xEFA0] = INS_GPU_MOVE_CURSOR_DOWN;
+        self.data[0xEFA2] = 0xF230;
+        self.data[0xEFA4] = 0xF1FF;
+        self.data[0xEFA6] = 0xF23D;
+        self.data[0xEFA8] = 0xF23C;
+        self.data[0xEFAA] = 0xF1FF;
+        self.data[0xEFAC] = 0xF224;
+        self.data[0xEFAE] = 0xF237;
+        self.data[0xEFB0] = 0xF228;
+        self.data[0xEFB2] = 0xF233;
+        self.data[0xEFB3] = INS_GPU_MOVE_CURSOR_DOWN;
+
+        self.data[0xEFB5] = 0xF231;
+        self.data[0xEFB7] = 0xF1FF;
+        self.data[0xEFB9] = 0xF23D;
+        self.data[0xEFBB] = 0xF23C;
+        self.data[0xEFBD] = 0xF1FF;
+        self.data[0xEFBF] = 0xF231;
+        self.data[0xEFC1] = 0xF224;
+        self.data[0xEFC3] = 0xF232;
+        self.data[0xEFC5] = 0xF224;
+        self.data[0xEFC7] = 0xF233;
+        self.data[0xEFC8] = INS_GPU_MOVE_CURSOR_DOWN;
+
+        self.data[0xEFCB] = 0xF223;
+        self.data[0xEFCD] = 0xF1FF;
+        self.data[0xEFCF] = 0xF23D;
+        self.data[0xEFD1] = 0xF23C;
+        self.data[0xEFD3] = 0xF1FF;
+        self.data[0xEFD5] = 0xF223;
+        self.data[0xEFD7] = 0xF234;
+        self.data[0xEFD9] = 0xF22C;
+        self.data[0xEFDB] = 0xF22F;
+        self.data[0xEFDD] = INS_GPU_MOVE_CURSOR_DOWN;
+
+        self.data[0xEFDF] = 0xF227;
+        self.data[0xEFE1] = 0xF1FF;
+        self.data[0xEFE3] = 0xF23D;
+        self.data[0xEFE5] = 0xF23C;
+        self.data[0xEFE7] = 0xF1FF;
+        self.data[0xEFE9] = 0xF227;
+        self.data[0xEFEB] = 0xF224;
+        self.data[0xEFED] = 0xF22B;
+        self.data[0xEFEF] = 0xF22F;
+        self.data[0xEFF1] = INS_GPU_MOVE_CURSOR_DOWN;
+        self.data[0xEFF2] = INS_GPU_MOVE_CURSOR_DOWN;
+
+        self.data[0xEFF3] = INS_JUMP_ABSOLUTE;
+        self.data[0xEFF4] = 0xF000;
     }
 
     pub fn dump(&mut self) {

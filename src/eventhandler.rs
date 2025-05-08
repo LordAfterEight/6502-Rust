@@ -1,4 +1,4 @@
-use crate::crossterm::event::{self, KeyCode, KeyEventKind};
+use crate::crossterm::event::{self};
 
 pub fn read_event() -> event::KeyCode {
     loop{
