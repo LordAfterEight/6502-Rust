@@ -1,4 +1,4 @@
-use crate::{opcodes::*, memory::*};
+use crate::{opcodes::*, memory::*, gpu::*};
 use crate::colored::Colorize;
 use crate::eventhandler::*;
 use crate::crossterm::{
@@ -154,7 +154,6 @@ impl CPU {
     // Fetches a byte from the PC address and returns it
     pub fn fetch_byte(&mut self, cycles: &mut u32, memory: &Memory) -> Word {
         let data = memory.data[self.program_counter as usize];
-        println!("Fetched instruction {:#06X} at {:#06X}", &data, self.program_counter);
         if self.program_counter == u16::MAX {
             self.program_counter = 0x0000;
         }
@@ -190,12 +189,11 @@ impl CPU {
     }
 
     // Executes an instruction
-    pub fn execute(&mut self, mut speed: u64, mut memory: &mut Memory) {
+    pub fn execute(&mut self, mut speed: u64, mut memory: &mut Memory, mut gpu: &mut GPU) {
         let clock_speed: u64 = speed;
         let mut cycles = 0;
         while cycles >= 0 {
 
-            println!("\nFetching instruction...");
             let data = self.fetch_byte(&mut cycles, memory);
 
             match data {
@@ -208,12 +206,10 @@ impl CPU {
                     self.program_counter = self.read_word(&mut cycles, 0xFFFE, &memory);
                     self.interrupt_disable = true;
                     self.break_command = true;
-                    println!("Forced interrupt");
                     self.error_loop("Forced interrupt", 168, cycles, memory);
                 },
 
                 INS_NO_OPERATION => {
-                    println!("Doing nothing...\n");
                     if self.program_counter == u16::MAX {
                         self.program_counter = 0x0000;
                     }
@@ -224,17 +220,12 @@ impl CPU {
                 INS_JUMP_ABSOLUTE => {
                     let address = self.fetch_byte(&mut cycles, &memory);
                     self.program_counter = address;
-                    println!("Jumped to address {:#06X}\n", self.program_counter);
                     cycles += 1;
                 },
 
                 INS_JUMP_TO_SUBROUTINE => {
                     let sub_address: Word = self.fetch_byte(&mut cycles, &mut memory);
                     self.write_byte(self.program_counter-1, &mut cycles, self.stack_pointer, &mut memory);
-                    println!("Jumping from {:#06X} to subroutine at {:#06X}",
-                        self.program_counter,
-                        sub_address
-                    );
                     self.program_counter = sub_address;
                     if self.stack_pointer == u16::MAX {
                         self.stack_pointer = 0x0100;
@@ -245,7 +236,6 @@ impl CPU {
 
                 INS_RETURN_FROM_SUBROUTINE => {
                     self.program_counter = self.read_byte(&mut cycles, self.stack_pointer - 1, &mut memory) + 1;
-                    println!("Returned to {:#06X} from subroutine", self.program_counter);
                     if self.stack_pointer == u16::MAX {
                         self.stack_pointer = 0x0100;
                     }
@@ -254,22 +244,21 @@ impl CPU {
 
                 },
 
+                INS_GPU_DRAW_AT_CURSOR_POSITION => {
+                    let letter: Word = self.fetch_byte(&mut cycles, memory);
+                    gpu.write_letter(letter, &mut memory);
+                },
+
                 INS_LOAD_ACCUMULATOR_IMMEDIATE => {
                     let value: Word = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = value;
                     self.set_zero_and_negative_flags(self.accumulator);
-                    println!("Loaded value {:#06X} into register A\n",
-                        value
-                    );
                 },
 
                 INS_LOAD_ACCUMULATOR_ZERO_PAGE => {
                     let zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
                     self.accumulator = self.read_byte(&mut cycles, zero_page_address.into(), memory);
                     self.set_zero_and_negative_flags(self.accumulator);
-                    println!("Loaded value {:#06X} into register A\n",
-                        zero_page_address
-                    );
                 },
 
                 INS_LOAD_ACCUMULATOR_ZERO_PAGE_X => {
@@ -303,14 +292,14 @@ impl CPU {
                 },
 
                 INS_STORE_X_REGISTER_ZERO_PAGE => {
-                    let zero_page_address: Word = self.fetch_byte(&mut cycles, memory) as u16;
+                    let zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
                     memory.data[zero_page_address as usize] = self.idx_reg_x as u16;
                     cycles += 1;
                     self.set_zero_and_negative_flags(self.accumulator);
                 },
 
                 INS_STORE_Y_REGISTER_ZERO_PAGE => {
-                    let zero_page_address: Word = self.fetch_byte(&mut cycles, memory) as u16;
+                    let zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
                     memory.data[zero_page_address as usize] = self.idx_reg_y as u16;
                     cycles += 1;
                     self.set_zero_and_negative_flags(self.accumulator);

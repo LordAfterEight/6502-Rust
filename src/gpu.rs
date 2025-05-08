@@ -1,10 +1,20 @@
-//use screen_13_window::{Window, WindowError};
+#![allow(unused_imports)]
 use crate::{
     opcodes::*,
-    memory::*
+    memory::*,
+    crossterm::{
+        cursor::{
+            MoveLeft,
+            MoveRight,
+            MoveToPreviousLine,
+            MoveToNextLine
+        },
+        ExecutableCommand,
+        execute
+    }
 };
 
-struct GPU {
+pub struct GPU {
 }
 
 impl GPU {
@@ -15,10 +25,18 @@ impl GPU {
             frame
                 .render_graph
         })
+    }*/
+
+    pub fn write_letter(&self, address: u16, memory: &mut Memory) {
+        let letter: u8 = memory.data[address as usize].try_into().unwrap();
+        print!("{}", char::from(letter));
     }
-    */
-    pub fn write_letter(address: u16, payload: u16, memory: &mut Memory) {
-        let letter = memory.data[address as usize]
-        print!("{}", )
+
+    pub fn clear_at_cursor() {
+        execute!(
+            std::io::stdout(),
+            MoveLeft(1)
+        );
+        print!(" ");
     }
 }
