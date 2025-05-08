@@ -3,6 +3,15 @@
 version = 4
 
 [[package]]
+name = "VM16B"
+version = "0.1.0"
+dependencies = [
+ "clearscreen",
+ "colored",
+ "crossterm",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -119,15 +128,6 @@ name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
-
-[[package]]
-name = "emu-6502"
-version = "0.1.0"
-dependencies = [
- "clearscreen",
- "colored",
- "crossterm",
-]
 
 [[package]]
 name = "env_home"
