@@ -1,9 +1,12 @@
 #![allow(dead_code)]
-mod structs;
+mod cpu;
+mod memory;
 mod opcodes;
-use structs::*;
+use cpu::*;
+use memory::*;
 use opcodes::*;
 
+use colored;
 use clearscreen;
 
 
