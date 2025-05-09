@@ -50,7 +50,8 @@ fn main() {
     };
 
     cpu.reset();
-    memory.initialise();
+    memory.init();
+    gpu.init();
     memory.data[0xFFFC] = INS_JUMP_TO_SUBROUTINE;
     memory.data[0xFFFD] = 0xF000;
 

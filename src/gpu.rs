@@ -4,10 +4,16 @@ use crate::{
     memory::*,
     crossterm::{
         cursor::{
+            MoveTo,
             MoveLeft,
             MoveRight,
             MoveToPreviousLine,
-            MoveToNextLine
+            MoveToNextLine,
+            position
+        },
+        terminal::{
+            ScrollUp,
+            ScrollDown
         },
         ExecutableCommand,
         execute
@@ -19,14 +25,12 @@ pub struct GPU {
 }
 
 impl GPU {
-    /*pub fn init() {
-        pretty_env_logger::init();
-
-        Window::new()?.run(|frame| {
-            frame
-                .render_graph
-        })
-    }*/
+    pub fn init(&self) {
+        execute!(
+            std::io::stdout(),
+            MoveTo(0,0)
+        );
+    }
 
     pub fn write_letter(&self, address: u16, memory: &mut Memory) {
         let letter: u8 = memory.data[address as usize].try_into().unwrap();
@@ -49,5 +53,29 @@ impl GPU {
             MoveToNextLine(lines)
         );
         _ = std::io::stdout().flush();
+    }
+
+    pub fn scroll_up(&self, lines: u16) {
+        execute!(
+            std::io::stdout(),
+            ScrollUp(lines)
+        );
+        std::io::stdout().flush();
+    }
+
+    pub fn move_to_next_line(&self, lines: u16) {
+        execute!(
+            std::io::stdout(),
+            MoveToNextLine(lines)
+        );
+        std::io::stdout().flush();
+    }
+
+    pub fn update(&self) {
+        let (cursor_x, cursor_y) = position().unwrap();
+        if cursor_y >= 30 {
+            self.scroll_up(1);
+            _ = std::io::stdout().flush();
+        }
     }
 }

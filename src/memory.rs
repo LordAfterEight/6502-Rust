@@ -10,7 +10,7 @@ pub struct Memory {
 }
 
 impl Memory {
-    pub fn initialise(&mut self) {
+    pub fn init(&mut self) {
         for i in 0..MAX_MEM {
             self.data[i as usize] = INS_NO_OPERATION;
         }
@@ -103,6 +103,11 @@ impl Memory {
             self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
             i+=2;
         }
+        for mut i in 0xEEF0..0xEF0D {
+            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
+            i+=2;
+        }
+
         self.data[0xEFA0] = INS_GPU_MOVE_CURSOR_DOWN;
         self.data[0xEFA2] = 0xF230;
         self.data[0xEFA4] = 0xF1FF;
@@ -125,7 +130,7 @@ impl Memory {
         self.data[0xEFC3] = 0xF232;
         self.data[0xEFC5] = 0xF224;
         self.data[0xEFC7] = 0xF233;
-        self.data[0xEFC8] = INS_GPU_MOVE_CURSOR_DOWN;
+        self.data[0xEFC8] = INS_GPU_MOVE_TO_NEXT_LINE;
 
         self.data[0xEFCB] = 0xF223;
         self.data[0xEFCD] = 0xF1FF;
@@ -136,7 +141,7 @@ impl Memory {
         self.data[0xEFD7] = 0xF234;
         self.data[0xEFD9] = 0xF22C;
         self.data[0xEFDB] = 0xF22F;
-        self.data[0xEFDD] = INS_GPU_MOVE_CURSOR_DOWN;
+        self.data[0xEFDD] = INS_GPU_MOVE_TO_NEXT_LINE;
 
         self.data[0xEFDF] = 0xF227;
         self.data[0xEFE1] = 0xF1FF;
@@ -147,11 +152,31 @@ impl Memory {
         self.data[0xEFEB] = 0xF224;
         self.data[0xEFED] = 0xF22B;
         self.data[0xEFEF] = 0xF22F;
-        self.data[0xEFF1] = INS_GPU_MOVE_CURSOR_DOWN;
-        self.data[0xEFF2] = INS_GPU_MOVE_CURSOR_DOWN;
+        self.data[0xEFF1] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEFF2] = INS_GPU_MOVE_TO_NEXT_LINE;
 
         self.data[0xEFF3] = INS_JUMP_ABSOLUTE;
         self.data[0xEFF4] = 0xF000;
+
+        // Command line invalid command
+        self.data[0xEEF1] = 0xF208;
+        self.data[0xEEF3] = 0xF22D;
+        self.data[0xEEF5] = 0xF235;
+        self.data[0xEEF7] = 0xF220;
+        self.data[0xEEF9] = 0xF22B;
+        self.data[0xEEFB] = 0xF228;
+        self.data[0xEEFD] = 0xF223;
+        self.data[0xEEFF] = 0xF1FF;
+        self.data[0xEF01] = 0xF222;
+        self.data[0xEF03] = 0xF22E;
+        self.data[0xEF05] = 0xF22C;
+        self.data[0xEF07] = 0xF22C;
+        self.data[0xEF09] = 0xF220;
+        self.data[0xEF0B] = 0xF22D;
+        self.data[0xEF0D] = 0xF223;
+        self.data[0xEF0E] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF0F] = INS_JUMP_ABSOLUTE;
+        self.data[0xEF10] = 0xF000;
     }
 
     pub fn dump(&mut self) {

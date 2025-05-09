@@ -86,7 +86,7 @@ impl CPU {
                     "q => exit\nr => reset\nd => dump memory\nh => help\n".cyan()
                 );
             }
-            println!("[cpu] <= $");
+            println!("[debug] <= $");
             std::thread::sleep(std::time::Duration::from_millis(100));
             execute!(
                 std::io::stdout(),
@@ -192,6 +192,7 @@ impl CPU {
     pub fn execute(&mut self, mut memory: &mut Memory, mut gpu: &mut GPU) {
         let mut cycles = 0;
         while cycles >= 0 {
+            //gpu.update();
 
             let data = self.fetch_byte(&mut cycles, memory);
 
@@ -257,17 +258,31 @@ impl CPU {
                             _ = clearscreen::clear();
                             continue;
                         },
-                        _ => {self.program_counter = 0xEFA0;}
+                        KeyCode::Enter => {
+                            self.program_counter = 0xF000;
+                            continue;
+                        },
+                        _ => {
+                            self.program_counter = 0xEEF0;
+                        }
                     }
                 },
 
                 INS_GPU_DRAW_AT_CURSOR_POSITION => {
                     let letter: Word = self.fetch_byte(&mut cycles, memory);
-                    gpu.write_letter(letter, &mut memory);
+                    gpu.write_letter(letter, &mut memory)
+                },
+
+                INS_GPU_SCROLL_UP => {
+                    gpu.scroll_up(1);
                 },
 
                 INS_GPU_MOVE_CURSOR_DOWN => {
                     gpu.move_down(1);
+                },
+
+                INS_GPU_MOVE_TO_NEXT_LINE => {
+                    gpu.move_to_next_line(1);
                 },
 
                 INS_LOAD_ACCUMULATOR_IMMEDIATE => {
@@ -307,9 +322,6 @@ impl CPU {
                     memory.data[zero_page_address as usize] = self.accumulator as u16;
                     cycles += 1;
                     self.set_zero_and_negative_flags(self.accumulator);
-                    println!("Stored register A content to address {:#06X}\n",
-                        zero_page_address
-                    );
                 },
 
                 INS_STORE_X_REGISTER_ZERO_PAGE => {

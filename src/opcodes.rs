@@ -43,8 +43,11 @@ pub const INS_WAIT_FOR_INPUT: Word = 0x01;
 
 // GPU opcodes
 pub const INS_GPU_DRAW_AT_CURSOR_POSITION: Word = 0xA000;
+pub const INS_GPU_DRAW_AT_CURSOR_AND_SCROLL: Word = 0xA001;
 pub const INS_GPU_CLEAR_AT_CURSOR_POSITION: Word = 0xA100;
 pub const INS_GPU_MOVE_CURSOR_RIGHT: Word = 0xA200;
 pub const INS_GPU_MOVE_CURSOR_LEFT: Word = 0xA201;
 pub const INS_GPU_MOVE_CURSOR_UP: Word = 0xA202;
 pub const INS_GPU_MOVE_CURSOR_DOWN: Word = 0xA203;
+pub const INS_GPU_MOVE_TO_NEXT_LINE: Word = 0xA204;
+pub const INS_GPU_SCROLL_UP: Word = 0xA300;
