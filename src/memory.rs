@@ -103,7 +103,7 @@ impl Memory {
             self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
             i+=2;
         }
-        for mut i in 0xEEF0..0xEF0D {
+        for mut i in 0xEEF0..0xEF1F {
             self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
             i+=2;
         }
@@ -174,9 +174,19 @@ impl Memory {
         self.data[0xEF09] = 0xF220;
         self.data[0xEF0B] = 0xF22D;
         self.data[0xEF0D] = 0xF223;
-        self.data[0xEF0E] = INS_GPU_MOVE_TO_NEXT_LINE;
-        self.data[0xEF0F] = INS_JUMP_ABSOLUTE;
-        self.data[0xEF10] = 0xF000;
+        self.data[0xEF0F] = 0xF1FF;
+        self.data[0xEF11] = 0xF24C;
+        self.data[0xEF13] = 0xF1FF;
+        self.data[0xEF15] = 0xF233;
+        self.data[0xEF17] = 0xF238;
+        self.data[0xEF19] = 0xF22F;
+        self.data[0xEF1B] = 0xF224;
+        self.data[0xEF1D] = 0xF1FF;
+        self.data[0xEF1F] = 0xF227;
+        self.data[0xEF21] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF22] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF23] = INS_JUMP_ABSOLUTE;
+        self.data[0xEF24] = 0xF000;
     }
 
     pub fn dump(&mut self) {
