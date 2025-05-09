@@ -263,7 +263,7 @@ impl CPU {
                             continue;
                         },
                         _ => {
-                            self.program_counter = 0xEEF0;
+                            self.program_counter = 0xEF50;
                         }
                     }
                 },
