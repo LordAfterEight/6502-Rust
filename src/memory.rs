@@ -78,7 +78,7 @@ impl Memory {
         self.data[0xF00D] = 0xF23B;
         self.data[0xF00F] = 0xF23D;
         self.data[0xF011] = 0xF1FF;
-        self.data[0xF013] = 0xF21D;
+        self.data[0xF013] = 0xF21C;
         self.data[0xF015] = 0xF1FF;
 
         // Command line routine
