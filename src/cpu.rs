@@ -251,7 +251,7 @@ impl CPU {
                         KeyCode::Char('q') => std::process::exit(0),
                         KeyCode::Char('d') => memory.dump(),
                         KeyCode::Char('h') => {
-                            self.program_counter = 0xEFA0;
+                            self.program_counter = 0xEF1F;
                             continue;
                         },
                         KeyCode::Char('r') => {
@@ -259,12 +259,12 @@ impl CPU {
                             _ = clearscreen::clear();
                             continue;
                         },
+                        KeyCode::Char('i') => {
+                        },
                         KeyCode::Enter => {
-                            self.program_counter = 0xF000;
-                            continue;
                         },
                         _ => {
-                            self.program_counter = 0xEF50;
+                            self.program_counter = 0xEFA0;
                         }
                     }
                 },

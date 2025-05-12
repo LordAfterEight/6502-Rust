@@ -87,106 +87,104 @@ impl Memory {
         self.data[0xF018] = 0xF000;
 
         // Command line help display routine
-        for mut i in 0xEFA1..0xEFB2 {
+        for mut i in 0xEF21..0xEF80 {
             self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
             i+=2;
         }
-        for mut i in 0xEFB4..0xEFC7 {
-            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
-            i+=2;
-        }
-        for mut i in 0xEFCA..0xEFDB {
-            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
-            i+=2;
-        }
-        for mut i in 0xEFDE..0xEFEF {
-            self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
-            i+=2;
-        }
-        for mut i in 0xEF60..0xEF8F {
+        for mut i in 0xEFA0..0xEFCF {
             self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
             i+=2;
         }
 
-        self.data[0xEFA0] = INS_GPU_MOVE_CURSOR_DOWN;
-        self.data[0xEFA2] = 0xF230;
-        self.data[0xEFA4] = 0xF1FF;
-        self.data[0xEFA6] = 0xF23D;
-        self.data[0xEFA8] = 0xF23C;
-        self.data[0xEFAA] = 0xF1FF;
-        self.data[0xEFAC] = 0xF224;
-        self.data[0xEFAE] = 0xF237;
-        self.data[0xEFB0] = 0xF228;
-        self.data[0xEFB2] = 0xF233;
-        self.data[0xEFB3] = INS_GPU_MOVE_CURSOR_DOWN;
+        self.data[0xEF20] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF22] = 0xF230;
+        self.data[0xEF24] = 0xF1FF;
+        self.data[0xEF26] = 0xF23D;
+        self.data[0xEF28] = 0xF23C;
+        self.data[0xEF2A] = 0xF1FF;
+        self.data[0xEF2C] = 0xF224;
+        self.data[0xEF2E] = 0xF237;
+        self.data[0xEF30] = 0xF228;
+        self.data[0xEF32] = 0xF233;
+        self.data[0xEF33] = INS_GPU_MOVE_TO_NEXT_LINE;
 
-        self.data[0xEFB5] = 0xF231;
-        self.data[0xEFB7] = 0xF1FF;
-        self.data[0xEFB9] = 0xF23D;
-        self.data[0xEFBB] = 0xF23C;
-        self.data[0xEFBD] = 0xF1FF;
-        self.data[0xEFBF] = 0xF231;
-        self.data[0xEFC1] = 0xF224;
-        self.data[0xEFC3] = 0xF232;
-        self.data[0xEFC5] = 0xF224;
-        self.data[0xEFC7] = 0xF233;
-        self.data[0xEFC8] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF35] = 0xF231;
+        self.data[0xEF37] = 0xF1FF;
+        self.data[0xEF39] = 0xF23D;
+        self.data[0xEF3B] = 0xF23C;
+        self.data[0xEF3D] = 0xF1FF;
+        self.data[0xEF3F] = 0xF231;
+        self.data[0xEF41] = 0xF224;
+        self.data[0xEF43] = 0xF232;
+        self.data[0xEF45] = 0xF224;
+        self.data[0xEF47] = 0xF233;
+        self.data[0xEF48] = INS_GPU_MOVE_TO_NEXT_LINE;
 
-        self.data[0xEFCB] = 0xF223;
-        self.data[0xEFCD] = 0xF1FF;
-        self.data[0xEFCF] = 0xF23D;
-        self.data[0xEFD1] = 0xF23C;
-        self.data[0xEFD3] = 0xF1FF;
-        self.data[0xEFD5] = 0xF223;
-        self.data[0xEFD7] = 0xF234;
-        self.data[0xEFD9] = 0xF22C;
-        self.data[0xEFDB] = 0xF22F;
-        self.data[0xEFDD] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF4A] = 0xF223;
+        self.data[0xEF4C] = 0xF1FF;
+        self.data[0xEF4E] = 0xF23D;
+        self.data[0xEF50] = 0xF23C;
+        self.data[0xEF52] = 0xF1FF;
+        self.data[0xEF54] = 0xF223;
+        self.data[0xEF56] = 0xF234;
+        self.data[0xEF58] = 0xF22C;
+        self.data[0xEF5A] = 0xF22F;
+        self.data[0xEF5B] = INS_GPU_MOVE_TO_NEXT_LINE;
 
-        self.data[0xEFDF] = 0xF227;
-        self.data[0xEFE1] = 0xF1FF;
-        self.data[0xEFE3] = 0xF23D;
-        self.data[0xEFE5] = 0xF23C;
-        self.data[0xEFE7] = 0xF1FF;
-        self.data[0xEFE9] = 0xF227;
-        self.data[0xEFEB] = 0xF224;
-        self.data[0xEFED] = 0xF22B;
-        self.data[0xEFEF] = 0xF22F;
-        self.data[0xEFF1] = INS_GPU_MOVE_TO_NEXT_LINE;
-        self.data[0xEFF2] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF5D] = 0xF227;
+        self.data[0xEF5F] = 0xF1FF;
+        self.data[0xEF61] = 0xF23D;
+        self.data[0xEF63] = 0xF23C;
+        self.data[0xEF65] = 0xF1FF;
+        self.data[0xEF67] = 0xF227;
+        self.data[0xEF69] = 0xF224;
+        self.data[0xEF6B] = 0xF22B;
+        self.data[0xEF6D] = 0xF22F;
+        self.data[0xEF6E] = INS_GPU_MOVE_TO_NEXT_LINE;
 
-        self.data[0xEFF3] = INS_JUMP_ABSOLUTE;
-        self.data[0xEFF4] = 0xF000;
+        self.data[0xEF70] = 0xF228;
+        self.data[0xEF72] = 0xF1FF;
+        self.data[0xEF74] = 0xF23D;
+        self.data[0xEF76] = 0xF23C;
+        self.data[0xEF78] = 0xF1FF;
+        self.data[0xEF7A] = 0xF228;
+        self.data[0xEF7C] = 0xF22D;
+        self.data[0xEF7E] = 0xF225;
+        self.data[0xEF80] = 0xF22E;
+        self.data[0xEF81] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF82] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEF83] = INS_JUMP_ABSOLUTE;
+        self.data[0xEF84] = 0xF000;
 
         // Command line invalid command
-        self.data[0xEF61] = 0xF208;
-        self.data[0xEF63] = 0xF22D;
-        self.data[0xEF65] = 0xF235;
-        self.data[0xEF67] = 0xF220;
-        self.data[0xEF69] = 0xF22B;
-        self.data[0xEF6B] = 0xF228;
-        self.data[0xEF6D] = 0xF223;
-        self.data[0xEF6F] = 0xF1FF;
-        self.data[0xEF71] = 0xF222;
-        self.data[0xEF73] = 0xF22E;
-        self.data[0xEF75] = 0xF22C;
-        self.data[0xEF77] = 0xF22C;
-        self.data[0xEF79] = 0xF220;
-        self.data[0xEF7B] = 0xF22D;
-        self.data[0xEF7D] = 0xF223;
-        self.data[0xEF7F] = 0xF1FF;
-        self.data[0xEF81] = 0xF24C;
-        self.data[0xEF83] = 0xF1FF;
-        self.data[0xEF85] = 0xF233;
-        self.data[0xEF87] = 0xF238;
-        self.data[0xEF89] = 0xF22F;
-        self.data[0xEF8B] = 0xF224;
-        self.data[0xEF8D] = 0xF1FF;
-        self.data[0xEF8F] = 0xF227;
-        self.data[0xEF90] = INS_GPU_MOVE_TO_NEXT_LINE;
-        self.data[0xEF91] = INS_GPU_MOVE_TO_NEXT_LINE;
-        self.data[0xEF92] = INS_JUMP_ABSOLUTE;
-        self.data[0xEF93] = 0xF000;
+        self.data[0xEFA1] = 0xF208;
+        self.data[0xEFA3] = 0xF22D;
+        self.data[0xEFA5] = 0xF235;
+        self.data[0xEFA7] = 0xF220;
+        self.data[0xEFA9] = 0xF22B;
+        self.data[0xEFAB] = 0xF228;
+        self.data[0xEFAD] = 0xF223;
+        self.data[0xEFAF] = 0xF1FF;
+        self.data[0xEFB1] = 0xF222;
+        self.data[0xEFB3] = 0xF22E;
+        self.data[0xEFB5] = 0xF22C;
+        self.data[0xEFB7] = 0xF22C;
+        self.data[0xEFB9] = 0xF220;
+        self.data[0xEFBB] = 0xF22D;
+        self.data[0xEFBD] = 0xF223;
+        self.data[0xEFBF] = 0xF1FF;
+        self.data[0xEFC1] = 0xF24C;
+        self.data[0xEFC3] = 0xF1FF;
+        self.data[0xEFC5] = 0xF233;
+        self.data[0xEFC7] = 0xF238;
+        self.data[0xEFC9] = 0xF22F;
+        self.data[0xEFCB] = 0xF224;
+        self.data[0xEFCD] = 0xF1FF;
+        self.data[0xEFCF] = 0xF227;
+        self.data[0xEFD0] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEFD1] = INS_GPU_MOVE_TO_NEXT_LINE;
+        self.data[0xEFD2] = INS_JUMP_ABSOLUTE;
+        self.data[0xEFD3] = 0xF000;
     }
 
     pub fn dump(&mut self) {
