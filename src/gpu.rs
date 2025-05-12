@@ -39,10 +39,6 @@ impl GPU {
     }
 
     pub fn clear_at_cursor(&self) {
-        execute!(
-            std::io::stdout(),
-            MoveLeft(1)
-        );
         print!(" ");
         _ = std::io::stdout().flush();
     }

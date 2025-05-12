@@ -207,7 +207,7 @@ impl CPU {
                     self.program_counter = self.read_word(&mut cycles, 0xFFFE, &memory);
                     self.interrupt_disable = true;
                     self.break_command = true;
-                    self.error_loop("Forced interrupt", 168, cycles, memory);
+                    self.error_loop("Forced interrupt", 210, cycles, memory);
                 },
 
                 INS_NO_OPERATION => {
@@ -339,9 +339,8 @@ impl CPU {
                     self.set_zero_and_negative_flags(self.accumulator);
                 },
 
-                _ => println!("Invalid opcode: {:#06X}", &data)
+                _ => println!("Invalid opcode found: {:#06X}", &data)
             };
         }
-        // println!("Finished executing all instructions in {} cycles", cycles);
     }
 }

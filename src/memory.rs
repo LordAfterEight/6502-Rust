@@ -69,17 +69,17 @@ impl Memory {
             self.data[i as usize] = INS_GPU_DRAW_AT_CURSOR_POSITION;
             i+=2;
         }
-        self.data[0xF001] = 0xF21E;
-        self.data[0xF003] = 0xF202;
-        self.data[0xF005] = 0xF20F;
-        self.data[0xF007] = 0xF214;
-        self.data[0xF009] = 0xF21F;
-        self.data[0xF00B] = 0xF1FF;
-        self.data[0xF00D] = 0xF23B;
-        self.data[0xF00F] = 0xF23D;
-        self.data[0xF011] = 0xF1FF;
-        self.data[0xF013] = 0xF21C;
-        self.data[0xF015] = 0xF1FF;
+        self.data[0xF001] = 0xF21E; // [
+        self.data[0xF003] = 0xF202; // C
+        self.data[0xF005] = 0xF20F; // P
+        self.data[0xF007] = 0xF214; // U
+        self.data[0xF009] = 0xF21F; // ]
+        self.data[0xF00B] = 0xF1FF; //
+        self.data[0xF00D] = 0xF23B; // =
+        self.data[0xF00F] = 0xF23D; // >
+        self.data[0xF011] = 0xF1FF; //
+        self.data[0xF013] = 0xF21C; // #
+        self.data[0xF015] = 0xF1FF; //
 
         // Command line routine
         self.data[0xF016] = INS_WAIT_FOR_INPUT;
