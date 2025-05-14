@@ -193,7 +193,7 @@ impl CPU {
         let mut cycles = 0;
         while cycles >= 0 {
             //gpu.update();
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            std::thread::sleep(std::time::Duration::from_millis(25));
 
             let data = self.fetch_byte(&mut cycles, memory);
 

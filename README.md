@@ -11,7 +11,7 @@ Currently this virtual machine's memory has a hardcoded nanokernel and a command
 - i to display system information (not implemented yet)
 
 ## System
-the CPU of this system was originally supposed to be a 6502 emulation, but I decided to just make up my own instead. Some of the OpCodes are from the 6502, but I added my own to work with the system's GPU. I still plan to make the machine create its own window, however currently it still runs in your terminal and thus csn't display proper graphics and uses print!() and println!() to write text.
+the CPU of this system was originally supposed to be a 6502 emulation, but I decided to just make up my own instead. Some of the OpCodes are from the 6502, but I added my own to work with the system's GPU. I still plan to make the machine create its own window, however currently it still runs in your terminal and thus can't display proper graphics and uses print!() and println!() to write text.
 
 The memory has 65536 16-bit addresses (128KB of storage space) and functions as both ROM and RAM.
 
