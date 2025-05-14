@@ -1,6 +1,7 @@
 use crate::{
     MAX_MEM, Byte, Word,
     opcodes::*,
+    data::*
 };
 use crate::colored::Colorize;
 use std::io::Write;
@@ -11,6 +12,9 @@ pub struct Memory {
 
 impl Memory {
     pub fn init(&mut self) {
+
+        let ascii = ASCII::init();
+
         for i in 0..MAX_MEM {
             self.data[i as usize] = INS_NO_OPERATION;
         }
@@ -213,7 +217,7 @@ impl Memory {
     pub fn dump_to_file(&mut self) {
         let mut file = std::fs::File::options().write(true).open("hex.bin").expect("Unable to open file");
         for value in self.data {
-            write!(&mut file, "{:#06X}  ", value).expect("Unable to write to file");
+            write!(&mut file, "{:#06X} ", value).expect("Unable to write to file");
         }
         println!("{}","[i] Dumped memory".yellow());
     }

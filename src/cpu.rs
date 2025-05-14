@@ -69,7 +69,6 @@ impl CPU {
         cycles: u32,
         memory: &mut Memory
     ) {
-        //memory.dump();
         println!("\n{} Line:{} | Cycle:{}\n{} {}\n",
             "[!] Entered safe loop at:".truecolor(200,100,0),
             line,
