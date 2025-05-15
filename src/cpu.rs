@@ -1,9 +1,10 @@
+#![allow(unused_variables)]
+#![allow(non_snake_case)]
 use crate::{opcodes::*, memory::*, gpu::*};
 use crate::colored::Colorize;
 use crate::eventhandler::*;
 use crate::crossterm::{
     event::KeyCode,
-    ExecutableCommand,
     execute,
     cursor::{
         SetCursorStyle,
@@ -12,7 +13,6 @@ use crate::crossterm::{
         EnableBlinking
     }
 };
-use std::io::Write;
 type Byte = u8;
 type Word = u16;
 static MAX_MEM: u32 = 1024 * 64;
@@ -87,14 +87,17 @@ impl CPU {
             }
             println!("[debug] <= $");
             std::thread::sleep(std::time::Duration::from_millis(100));
-            execute!(
+            match execute!(
                 std::io::stdout(),
                 SetCursorStyle::BlinkingUnderScore,
                 MoveToPreviousLine(1),
                 MoveRight(11),
                 EnableBlinking
-            );
-            let mut input = read_event();
+            ) {
+                Ok(()) => {},
+                Err(..) => println!("Error occured")
+            };
+            let input = read_event();
             match input {
                 KeyCode::Char('q') => std::process::exit(0),
                 KeyCode::Char('r') => {self.reset(); break},
@@ -188,9 +191,9 @@ impl CPU {
     }
 
     // Executes an instruction
-    pub fn execute(&mut self, mut memory: &mut Memory, mut gpu: &mut GPU) {
+    pub fn execute(&mut self, mut memory: &mut Memory, gpu: &mut GPU) {
         let mut cycles = 0;
-        while cycles >= 0 {
+        loop {
             //gpu.update();
             std::thread::sleep(std::time::Duration::from_millis(25));
 
@@ -328,17 +331,8 @@ impl CPU {
                     let zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
                     memory.data[zero_page_address as usize] = self.idx_reg_x as u16;
                     cycles += 1;
-                    self.set_zero_and_negative_flags(self.accumulator);
+                    self.set_zero_and_negative_flags(self.idx_reg_x);
                 },
-
-                INS_STORE_Y_REGISTER_ZERO_PAGE => {
-                    let zero_page_address: Word = self.fetch_byte(&mut cycles, memory);
-                    memory.data[zero_page_address as usize] = self.idx_reg_y as u16;
-                    cycles += 1;
-                    self.set_zero_and_negative_flags(self.accumulator);
-                },
-
-                _ => println!("Invalid opcode found: {:#06X}", &data)
             };
         }
     }

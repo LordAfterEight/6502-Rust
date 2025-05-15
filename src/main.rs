@@ -6,11 +6,9 @@ mod eventhandler;
 mod gpu;
 mod data;
 use cpu::*;
+use gpu::*;
 use memory::*;
 use opcodes::*;
-use eventhandler::*;
-use gpu::*;
-use data::*;
 
 use colored;
 use clearscreen;

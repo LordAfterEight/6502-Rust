@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::{Word};
+use crate::Word;
 
 
 // CPU opcodes

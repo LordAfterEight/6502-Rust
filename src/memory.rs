@@ -1,5 +1,6 @@
+#![allow(unused_assignments)]
 use crate::{
-    MAX_MEM, Byte, Word,
+    MAX_MEM, Word,
     opcodes::*,
     data::*
 };
@@ -13,7 +14,7 @@ pub struct Memory {
 impl Memory {
     pub fn init(&mut self) {
 
-        let ascii = ASCII::init();
+        let _ascii = ASCII::init();
 
         for i in 0..MAX_MEM {
             self.data[i as usize] = INS_NO_OPERATION;
@@ -193,9 +194,9 @@ impl Memory {
 
     pub fn dump(&mut self) {
         let mut out = 0;
-        for mut y in 0..0xFFFF/8+1 {
-            for mut x in 0..8 {
-                let mut string = String::from(format!(
+        for _y in 0..0xFFFF/8+1 {
+            for x in 0..8 {
+                let string = String::from(format!(
                     "{:#06X}",
                     self.data[out+x as usize]
                 ));

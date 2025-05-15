@@ -26,10 +26,13 @@ pub struct GPU {
 
 impl GPU {
     pub fn init(&self) {
-        execute!(
+        match execute!(
             std::io::stdout(),
             MoveTo(0,0)
-        );
+        ) {
+            Ok(()) => {},
+            Err(..) => println!("Error occured")
+        }
     }
 
     pub fn write_letter(&self, address: u16, memory: &mut Memory) {
@@ -44,31 +47,40 @@ impl GPU {
     }
 
     pub fn move_down(&self, lines: u16) {
-        execute!(
+        match execute!(
             std::io::stdout(),
             MoveToNextLine(lines)
-        );
+        ) {
+            Ok(()) => {},
+            Err(..) => println!("Error occured")
+        }
         _ = std::io::stdout().flush();
     }
 
     pub fn scroll_up(&self, lines: u16) {
-        execute!(
+        match execute!(
             std::io::stdout(),
             ScrollUp(lines)
-        );
-        std::io::stdout().flush();
+        ) {
+            Ok(()) => {},
+            Err(..) => println!("Error occured")
+        }
+        _ = std::io::stdout().flush();
     }
 
     pub fn move_to_next_line(&self, lines: u16) {
-        execute!(
+        match execute!(
             std::io::stdout(),
             MoveToNextLine(lines)
-        );
-        std::io::stdout().flush();
+        ) {
+            Ok(()) => {},
+            Err(..) => println!("Error occured")
+        }
+        _ = std::io::stdout().flush();
     }
 
     pub fn update(&self) {
-        let (cursor_x, cursor_y) = position().unwrap();
+        let (_cursor_x, cursor_y) = position().unwrap();
         if cursor_y >= 30 {
             self.scroll_up(1);
             _ = std::io::stdout().flush();

@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 pub struct ASCII {
     A: u8, a: u8, exclamation: u8,
     B: u8, b: u8, quotation: u8,
